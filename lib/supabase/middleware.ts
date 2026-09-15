@@ -34,37 +34,60 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Refresh the session — important for Server Components
+  // Refresh session
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
 
-  // Public routes that don't need auth: login, register, new order, and order detail tracking
-  const isOrderTracking = pathname.startsWith('/orders/') && pathname !== '/orders';
-  const publicRoutes = ['/login', '/register', '/orders/new'];
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route)) || isOrderTracking;
-
-  // If no user and trying to access protected route, redirect to login
-  if (!user && !isPublicRoute && pathname !== '/') {
+  // 1. If trying to access /register, redirect to /login
+  if (pathname.startsWith('/register')) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
 
-  // If user is logged in and trying to access login/register, redirect based on role
-  if (user && (pathname.startsWith('/login') || pathname.startsWith('/register'))) {
+  // 2. Public routes that don't require authentication
+  const isOrderTracking = pathname.startsWith('/orders/') && pathname !== '/orders';
+  const publicRoutes = [
+    '/login',
+    '/driver/login',
+    '/engzadmin/login',
+    '/admin/login',
+    '/join-driver',
+    '/orders/new',
+    '/api/pricing/estimate',
+  ];
+  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route)) || isOrderTracking;
+
+  // 3. Unauthenticated access handling
+  if (!user && !isPublicRoute && pathname !== '/') {
+    const url = request.nextUrl.clone();
+    if (pathname.startsWith('/engzadmin') || pathname.startsWith('/admin')) {
+      url.pathname = '/engzadmin/login';
+    } else if (pathname.startsWith('/driver')) {
+      url.pathname = '/driver/login';
+    } else {
+      url.pathname = '/login';
+    }
+    return NextResponse.redirect(url);
+  }
+
+  // 4. If logged in and accessing login pages, redirect to role dashboard
+  if (user && (pathname.startsWith('/login') || pathname === '/engzadmin/login' || pathname === '/driver/login')) {
     const { data: userData } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
-      .single() as { data: { role: string } | null };
+      .maybeSingle() as { data: { role: string } | null };
 
+    const role = userData?.role || (user.user_metadata as any)?.role || 'customer';
     const url = request.nextUrl.clone();
-    switch (userData?.role) {
+
+    switch (role) {
       case 'admin':
-        url.pathname = '/admin';
+        url.pathname = '/engzadmin';
         break;
       case 'agent':
         url.pathname = '/agent';
@@ -79,20 +102,20 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Role-based route protection
+  // 5. Role-based Route Protection
   if (user) {
     const { data: userData } = await supabase
       .from('users')
       .select('role')
       .eq('id', user.id)
-      .single() as { data: { role: string } | null };
+      .maybeSingle() as { data: { role: string } | null };
 
-    const role = userData?.role;
+    const role = userData?.role || (user.user_metadata as any)?.role || 'customer';
 
     // Protect admin routes
-    if ((pathname.startsWith('/admin') || pathname.startsWith('/engzadmin')) && role !== 'admin') {
+    if ((pathname.startsWith('/admin') || pathname.startsWith('/engzadmin')) && !pathname.endsWith('/login') && role !== 'admin') {
       const url = request.nextUrl.clone();
-      url.pathname = '/login';
+      url.pathname = '/engzadmin/login';
       return NextResponse.redirect(url);
     }
 
@@ -104,9 +127,9 @@ export async function updateSession(request: NextRequest) {
     }
 
     // Protect driver routes
-    if (pathname.startsWith('/driver') && role !== 'driver' && role !== 'admin') {
+    if (pathname.startsWith('/driver') && !pathname.endsWith('/login') && role !== 'driver' && role !== 'admin') {
       const url = request.nextUrl.clone();
-      url.pathname = '/login';
+      url.pathname = '/driver/login';
       return NextResponse.redirect(url);
     }
   }

@@ -72,12 +72,17 @@ export default function LoginPage() {
       </form>
 
       <div className="auth-divider">
-        <span>ليس لديك حساب؟</span>
+        <span>أو استخدم المنظومة مباشرة</span>
       </div>
 
-      <Link href="/register" className="btn-outline btn-full" id="go-to-register-link">
-        إنشاء حساب جديد
-      </Link>
+      <div className="flex flex-col gap-2">
+        <Link href="/orders/new" className="btn-outline btn-full text-center" id="go-to-new-order-link">
+          🚀 طلب توصيل فوري كزائر (بدون تسجيل)
+        </Link>
+        <Link href="/join-driver" className="text-center text-xs text-[#FA3802] font-bold hover:underline py-1" id="go-to-join-driver-link">
+          🛵 تريد العمل معنا كطيار؟ قدّم طلب انضمام الآن ›
+        </Link>
+      </div>
 
       <style>{`
         .auth-card {

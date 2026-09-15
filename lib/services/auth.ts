@@ -109,33 +109,54 @@ export async function loginUser(params: {
 }): Promise<AuthResult & { role?: UserRole }> {
   const supabase = await createClient();
 
+  const cleanEmail = params.email.trim().toLowerCase();
+
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: params.email,
+    email: cleanEmail,
     password: params.password,
   });
 
   if (error) {
+    console.error('[loginUser] signInWithPassword error:', error.message);
     if (error.message.includes('Invalid login credentials')) {
       return { success: false, error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' };
     }
     if (error.message.includes('Email not confirmed')) {
       return { success: false, error: 'يرجى تأكيد البريد الإلكتروني أولاً' };
     }
-    return { success: false, error: 'حدث خطأ أثناء تسجيل الدخول' };
+    return { success: false, error: `حدث خطأ أثناء تسجيل الدخول: ${error.message}` };
   }
 
   if (!data.user) {
     return { success: false, error: 'فشل تسجيل الدخول' };
   }
 
-  // Fetch user role and active status
-  const { data: userData } = await supabase
-    .from('users')
-    .select('role, is_active')
-    .eq('id', data.user.id)
-    .single() as { data: Pick<UserRow, 'role' | 'is_active'> | null; error: unknown };
+  // Fetch user role and active status via Admin client to avoid any RLS blockage
+  let userRole: UserRole = 'customer';
+  let isActive = true;
 
-  if (userData && !userData.is_active) {
+  try {
+    const adminSupabase = await createAdminClient();
+    const { data: userData } = await adminSupabase
+      .from('users')
+      .select('role, is_active')
+      .eq('id', data.user.id)
+      .maybeSingle();
+
+    if (userData) {
+      userRole = (userData as any).role as UserRole;
+      isActive = (userData as any).is_active;
+    } else if ((data.user.user_metadata as any)?.role) {
+      userRole = (data.user.user_metadata as any).role as UserRole;
+    }
+  } catch (err) {
+    console.warn('[loginUser] Could not read role from public.users, using metadata:', err);
+    if ((data.user.user_metadata as any)?.role) {
+      userRole = (data.user.user_metadata as any).role as UserRole;
+    }
+  }
+
+  if (!isActive) {
     await supabase.auth.signOut();
     return { success: false, error: 'تم تعطيل هذا الحساب، تواصل مع الدعم' };
   }
@@ -143,7 +164,7 @@ export async function loginUser(params: {
   return {
     success: true,
     userId: data.user.id,
-    role: userData?.role as UserRole,
+    role: userRole,
   };
 }
 

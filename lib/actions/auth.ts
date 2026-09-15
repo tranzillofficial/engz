@@ -5,7 +5,7 @@ import { loginSchema, registerSchema, updateProfileSchema } from '@/lib/validati
 import { loginUser, registerUser, logoutUser, updateProfile, getRoleDashboard } from '@/lib/services/auth';
 
 /**
- * Server Action: Login
+ * Server Action: Login (General)
  */
 export async function loginAction(
   _prevState: { error?: string; success?: boolean } | null,
@@ -33,41 +33,46 @@ export async function loginAction(
 }
 
 /**
- * Server Action: Register
+ * Server Action: Admin Dedicated Login (/engzadmin/login)
  */
-export async function registerAction(
+export async function adminLoginAction(
   _prevState: { error?: string; success?: boolean } | null,
   formData: FormData
-): Promise<{ error?: string; success?: boolean; message?: string }> {
+): Promise<{ error?: string; success?: boolean }> {
   const raw = {
-    email: formData.get('email') as string,
+    email: (formData.get('email') as string)?.trim().toLowerCase(),
     password: formData.get('password') as string,
-    full_name: formData.get('full_name') as string,
-    phone: formData.get('phone') as string,
-    role: formData.get('role') as string,
   };
 
-  const parsed = registerSchema.safeParse(raw);
+  const parsed = loginSchema.safeParse(raw);
   if (!parsed.success) {
     const firstError = parsed.error.issues[0]?.message;
     return { error: firstError ?? 'بيانات غير صالحة' };
   }
 
-  const result = await registerUser({
-    email: parsed.data.email,
-    password: parsed.data.password,
-    full_name: parsed.data.full_name,
-    phone: parsed.data.phone,
-    role: parsed.data.role,
-  });
+  const result = await loginUser(parsed.data);
 
   if (!result.success) {
     return { error: result.error };
   }
 
+  if (result.role !== 'admin') {
+    await logoutUser();
+    return { error: 'غير مصرح: هذا الحساب ليس لديه صلاحيات الإدارة المركزية' };
+  }
+
+  redirect('/engzadmin');
+}
+
+/**
+ * Server Action: Register (Disabled — Customers use Guest checkout, Drivers use /join-driver)
+ */
+export async function registerAction(
+  _prevState: { error?: string; success?: boolean } | null,
+  _formData: FormData
+): Promise<{ error?: string; success?: boolean; message?: string }> {
   return {
-    success: true,
-    message: 'تم إنشاء حسابك بنجاح! يمكنك الآن تسجيل الدخول.',
+    error: 'التسجيل المباشر متوقف حالياً. يمكن للعملاء إنشاء الطلبات مباشرة، ويمكن للطيارين التقديم عبر رابط (انضم كطيار).',
   };
 }
 
