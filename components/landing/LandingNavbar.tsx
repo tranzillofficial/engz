@@ -187,6 +187,7 @@ export default function LandingNavbar({ user }: LandingNavbarProps) {
             {user ? (
               <Link
                 href={getDashboardLink(user.role)}
+                prefetch={false}
                 className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-[#FD7B03] to-[#FA3802] text-white text-xs sm:text-sm font-bold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shrink-0"
               >
                 <span>لوحة التحكم</span>

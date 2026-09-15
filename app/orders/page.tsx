@@ -16,8 +16,20 @@ interface OrdersPageProps {
 
 export default async function OrdersPage({ searchParams }: OrdersPageProps) {
   const user = await getCurrentUser();
-  if (!user || user.role !== 'customer') {
+  if (!user) {
     redirect('/login');
+  }
+
+  if (user.role === 'admin') {
+    redirect('/admin/orders');
+  }
+
+  if (user.role === 'driver') {
+    redirect('/driver/orders');
+  }
+
+  if (user.role === 'agent') {
+    redirect('/agent/orders');
   }
 
   const resolvedParams = await searchParams;
