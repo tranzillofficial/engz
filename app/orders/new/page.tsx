@@ -437,7 +437,7 @@ function NewOrderPageInner() {
                   </div>
 
                   {/* Quantity & Notes Row */}
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0 overflow-hidden">
                     {/* Quantity Stepper */}
                     <div className="flex items-center bg-gray-50 border border-gray-200 rounded-2xl p-1 shrink-0">
                       <button
@@ -461,7 +461,7 @@ function NewOrderPageInner() {
 
                     {/* Notes for this item */}
                     <input
-                      className="flex-1 px-3.5 py-2.5 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-slate-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#FA3802]/30 focus:border-[#FA3802] transition"
+                      className="flex-1 min-w-0 px-3.5 py-2.5 rounded-2xl bg-gray-50 border border-gray-200 text-xs text-slate-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#FA3802]/30 focus:border-[#FA3802] transition"
                       placeholder="ملاحظات (ماركة معينة، طازج...)"
                       value={item.notes}
                       onChange={(e) => updateItem(index, 'notes', e.target.value)}

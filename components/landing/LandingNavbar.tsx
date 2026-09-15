@@ -65,6 +65,31 @@ export default function LandingNavbar({ user }: LandingNavbarProps) {
     }
   };
 
+  const ctaHref = user ? getDashboardLink(user.role) : '/orders/new';
+  const ctaLabel = user ? 'لوحة التحكم' : 'ابدأ الآن';
+  const ctaClasses =
+    'inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-[#FD7B03] to-[#FA3802] text-white text-xs sm:text-sm font-bold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shrink-0';
+
+  const CtaLink = (
+    <Link href={ctaHref} prefetch={user ? false : undefined} className={ctaClasses}>
+      <span>{ctaLabel}</span>
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="rotate-180 hidden sm:inline"
+      >
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+      </svg>
+    </Link>
+  );
+
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${isScrolled
@@ -183,51 +208,18 @@ export default function LandingNavbar({ user }: LandingNavbarProps) {
               <InstallPwaButton variant="navbar" />
             </div>
 
-            {/* Primary Action CTA (Responsive sizing) */}
-            {user ? (
-              <Link
-                href={getDashboardLink(user.role)}
-                prefetch={false}
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-[#FD7B03] to-[#FA3802] text-white text-xs sm:text-sm font-bold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shrink-0"
-              >
-                <span>لوحة التحكم</span>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="rotate-180 hidden sm:inline"
-                >
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </Link>
-            ) : (
-              <Link
-                href="/orders/new"
-                className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-[#FD7B03] to-[#FA3802] text-white text-xs sm:text-sm font-bold shadow-md shadow-orange-500/20 hover:shadow-lg hover:shadow-orange-500/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 shrink-0"
-              >
-                <span>ابدأ الآن</span>
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="rotate-180 hidden sm:inline"
-                >
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </Link>
-            )}
+            {/* Primary Action CTA */}
+            {/* Phone view: install the site as an app (PWA) */}
+            <div className="md:hidden">
+              <InstallPwaButton
+                variant="cta"
+                label="التثبيت الآن"
+                installedFallback={CtaLink}
+              />
+            </div>
+
+            {/* Tablet & desktop: keep the regular CTA */}
+            <div className="hidden md:block">{CtaLink}</div>
 
             {/* Mobile Hamburger Menu Toggle Button */}
             <button

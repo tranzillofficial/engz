@@ -3,13 +3,16 @@
 import { useState, useTransition } from 'react';
 import { toggleDriverStatusAction, updateDriverLocationAction } from '@/lib/actions/drivers';
 import { Card, Button, Alert } from '@/components';
+import Link from 'next/link';
 import type { DriverProfileWithUser } from '@/lib/services/drivers';
 
 interface DriverHeaderProps {
   driver: DriverProfileWithUser;
+  activeOrderId?: string | null;
 }
 
-export function DriverHeader({ driver }: DriverHeaderProps) {
+export function DriverHeader({ driver, activeOrderId }: DriverHeaderProps) {
+  const isBusy = driver.status === 'busy';
   const [isOnline, setIsOnline] = useState(driver.status === 'online');
   const [isPending, startTransition] = useTransition();
   const [locationStatus, setLocationStatus] = useState<string | null>(null);
@@ -79,23 +82,51 @@ export function DriverHeader({ driver }: DriverHeaderProps) {
               <div className="flex items-center gap-2 mt-0.5 text-xs text-gray-300">
                 <span
                   className={`w-2.5 h-2.5 rounded-full ${
-                    isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-gray-400'
+                    isBusy
+                      ? 'bg-amber-400 animate-pulse'
+                      : isOnline
+                      ? 'bg-emerald-400 animate-pulse'
+                      : 'bg-gray-400'
                   }`}
                 />
-                <span>{isOnline ? 'متاح لاستقبال الطلبات (Online)' : 'غير متصل (Offline)'}</span>
+                <span>
+                  {isBusy
+                    ? 'مشغول — في رحلة توصيل حالياً 🚴'
+                    : isOnline
+                    ? 'متاح لاستقبال الطلبات (Online)'
+                    : 'غير متصل (Offline)'}
+                </span>
               </div>
             </div>
           </div>
 
-          <Button
-            type="button"
-            variant={isOnline ? 'danger' : 'primary'}
-            size="sm"
-            onClick={handleToggle}
-            disabled={isPending || driver.is_blocked}
-          >
-            {isPending ? 'جاري التحويل...' : isOnline ? 'تحويل إلى Offline' : 'ابدأ العمل Online 🚀'}
-          </Button>
+          {isBusy ? (
+            activeOrderId ? (
+              <Link
+                href={`/driver/orders/${activeOrderId}`}
+                className="btn btn-sm bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg px-3 py-2 no-underline"
+              >
+                متابعة الرحلة 🚀
+              </Link>
+            ) : (
+              <Link
+                href="/driver/orders?status=accepted"
+                className="btn btn-sm bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-lg px-3 py-2 no-underline"
+              >
+                رحلاتي النشطة 🚴
+              </Link>
+            )
+          ) : (
+            <Button
+              type="button"
+              variant={isOnline ? 'danger' : 'primary'}
+              size="sm"
+              onClick={handleToggle}
+              disabled={isPending || driver.is_blocked}
+            >
+              {isPending ? 'جاري التحويل...' : isOnline ? 'تحويل إلى Offline' : 'ابدأ العمل Online 🚀'}
+            </Button>
+          )}
         </div>
 
         <div className="mt-3 pt-3 border-t border-gray-800 flex items-center justify-between text-xs text-gray-400">
@@ -115,6 +146,26 @@ export function DriverHeader({ driver }: DriverHeaderProps) {
           </p>
         )}
       </Card>
+
+      {/* Active order banner when busy */}
+      {isBusy && (
+        <Link
+          href={activeOrderId ? `/driver/orders/${activeOrderId}` : '/driver/orders?status=accepted'}
+          className="block no-underline"
+        >
+          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 flex items-center gap-3 hover:shadow-md transition-all">
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-xl shrink-0 animate-pulse">
+              🚴
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-extrabold text-amber-900">لديك رحلة نشطة الآن</p>
+              <p className="text-xs text-amber-700 mt-0.5">اضغط هنا للعودة لتفاصيل الرحلة ومتابعة التوصيل</p>
+            </div>
+            <span className="text-amber-500 text-lg shrink-0">←</span>
+          </div>
+        </Link>
+      )}
     </div>
   );
 }
+

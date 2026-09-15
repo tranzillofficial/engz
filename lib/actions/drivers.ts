@@ -5,6 +5,7 @@
 // ============================================================
 
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/services/auth';
 import {
   getDriverByUserId,
@@ -68,6 +69,7 @@ export async function acceptOrderAction(orderId: string) {
     revalidatePath('/driver');
     revalidatePath('/driver/orders');
     revalidatePath(`/driver/orders/${orderId}`);
+    redirect(`/driver/orders/${orderId}`);
   }
   return res;
 }

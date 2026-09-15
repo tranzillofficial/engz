@@ -22,10 +22,11 @@ interface ChatMessage {
 interface ChatPanelProps {
   orderId: string;
   currentUserId: string;
-  isEnabled: boolean; // Only true for accepted/in_progress orders
+  isEnabled: boolean;
+  readOnly?: boolean;
 }
 
-export function ChatPanel({ orderId, currentUserId, isEnabled }: ChatPanelProps) {
+export function ChatPanel({ orderId, currentUserId, isEnabled, readOnly = false }: ChatPanelProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -51,16 +52,18 @@ export function ChatPanel({ orderId, currentUserId, isEnabled }: ChatPanelProps)
     }
   }, [orderId]);
 
-  // Poll for new messages every 5 seconds when chat is open
+  // Poll for new messages every 5 seconds when chat is open (skip polling in read-only)
   useEffect(() => {
     if (showChat && isEnabled) {
       fetchMessages();
-      pollingRef.current = setInterval(fetchMessages, 5000);
+      if (!readOnly) {
+        pollingRef.current = setInterval(fetchMessages, 5000);
+      }
       return () => {
         if (pollingRef.current) clearInterval(pollingRef.current);
       };
     }
-  }, [showChat, isEnabled, fetchMessages]);
+  }, [showChat, isEnabled, readOnly, fetchMessages]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -322,28 +325,30 @@ export function ChatPanel({ orderId, currentUserId, isEnabled }: ChatPanelProps)
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Location Action Buttons */}
-          <div className="px-3 py-1.5 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2 text-xs">
-            <button
-              type="button"
-              onClick={handleRequestLocation}
-              disabled={isSending}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-orange-50 text-slate-700 hover:text-[#FA3802] border border-gray-200 text-xs font-medium transition-colors shadow-2xs"
-            >
-              <span>📍 طلب الموقع</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleShareLocation}
-              disabled={isLocationLoading}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-[#FA3802] border border-orange-200 text-xs font-bold transition-colors shadow-2xs"
-            >
-              <span>{isLocationLoading ? 'جاري التحديد...' : '📍 إرسال موقعي'}</span>
-            </button>
-          </div>
+          {/* Quick Location Action Buttons (hidden in read-only) */}
+          {!readOnly && (
+            <div className="px-3 py-1.5 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2 text-xs">
+              <button
+                type="button"
+                onClick={handleRequestLocation}
+                disabled={isSending}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-orange-50 text-slate-700 hover:text-[#FA3802] border border-gray-200 text-xs font-medium transition-colors shadow-2xs"
+              >
+                <span>📍 طلب الموقع</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleShareLocation}
+                disabled={isLocationLoading}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-[#FA3802] border border-orange-200 text-xs font-bold transition-colors shadow-2xs"
+              >
+                <span>{isLocationLoading ? 'جاري التحديد...' : '📍 إرسال موقعي'}</span>
+              </button>
+            </div>
+          )}
 
           {/* Image Preview */}
-          {imagePreview && (
+          {!readOnly && imagePreview && (
             <div className="chat-image-preview">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={imagePreview} alt="معاينة" />
@@ -359,53 +364,63 @@ export function ChatPanel({ orderId, currentUserId, isEnabled }: ChatPanelProps)
             </div>
           )}
 
-          {/* Input Area */}
-          <div className="chat-input-area">
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="chat-file-input"
-              hidden
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="chat-attach-btn"
-              aria-label="إرفاق صورة"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <polyline points="21 15 16 10 5 21" />
-              </svg>
-            </button>
-
-            <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="اكتب رسالتك... | Type a message..."
-              className="chat-text-input"
-              disabled={isSending}
-            />
-
-            <button
-              onClick={handleSend}
-              disabled={isSending || (!newMessage.trim() && !imagePreview)}
-              className="chat-send-btn"
-              aria-label="إرسال"
-            >
-              {isSending ? (
-                <div className="chat-send-spinner" />
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+          {/* Read-only banner when order is delivered */}
+          {readOnly ? (
+            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 text-center">
+              <p className="text-xs text-gray-500 font-medium flex items-center justify-center gap-1.5">
+                <span>🔒</span>
+                <span>المحادثة مغلقة — سجل الرسائل للاطلاع فقط</span>
+              </p>
+            </div>
+          ) : (
+            /* Input Area */
+            <div className="chat-input-area">
+              <input
+                type="file"
+                ref={fileInputRef}
+                accept="image/*"
+                onChange={handleImageSelect}
+                className="chat-file-input"
+                hidden
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="chat-attach-btn"
+                aria-label="إرفاق صورة"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
                 </svg>
-              )}
-            </button>
-          </div>
+              </button>
+
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="اكتب رسالتك... | Type a message..."
+                className="chat-text-input"
+                disabled={isSending}
+              />
+
+              <button
+                onClick={handleSend}
+                disabled={isSending || (!newMessage.trim() && !imagePreview)}
+                className="chat-send-btn"
+                aria-label="إرسال"
+              >
+                {isSending ? (
+                  <div className="chat-send-spinner" />
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       )}
 

@@ -1,5 +1,5 @@
 import { getCurrentUser } from '@/lib/services/auth';
-import { getDriverByUserId } from '@/lib/services/drivers';
+import { getDriverByUserId, getDriverActiveOrderId } from '@/lib/services/drivers';
 import { getAvailableOrdersForDriver } from '@/lib/services/matching';
 import { redirect } from 'next/navigation';
 import { AppShell, PageHeader } from '@/components';
@@ -19,7 +19,13 @@ export default async function DriverDashboardPage() {
     redirect('/login');
   }
 
-  const availableOrders = await getAvailableOrdersForDriver(driver.id);
+  const isBusy = driver.status === 'busy';
+
+  // Fetch available orders and active order in parallel
+  const [availableOrders, activeOrderId] = await Promise.all([
+    isBusy ? Promise.resolve([]) : getAvailableOrdersForDriver(driver.id),
+    isBusy ? getDriverActiveOrderId(driver.id) : Promise.resolve(null),
+  ]);
 
   const navItems = [
     {
@@ -84,13 +90,15 @@ export default async function DriverDashboardPage() {
       navItems={navItems}
     >
       <div className="max-w-md mx-auto py-2">
-        <DriverHeader driver={driver} />
+        <DriverHeader driver={driver} activeOrderId={activeOrderId} />
         <AvailableOrdersList
           orders={availableOrders}
           isDriverBlocked={driver.is_blocked}
           isDriverOnline={driver.status === 'online'}
+          isDriverBusy={isBusy}
         />
       </div>
     </AppShell>
   );
 }
+

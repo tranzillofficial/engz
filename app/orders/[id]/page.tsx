@@ -58,7 +58,8 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
     await cancelOrderAction(order.id, 'إلغاء من قبل العميل');
   };
 
-  const isChatEnabled = order.status === 'accepted' || order.status === 'in_progress';
+  const isChatEnabled = order.status === 'accepted' || order.status === 'in_progress' || order.status === 'delivered';
+  const isChatReadOnly = order.status === 'delivered';
   const currentChatUserId = user ? user.id : order.customer_id;
 
   // Google Maps embed URL for dropoff location
@@ -286,6 +287,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           orderId={order.id}
           currentUserId={currentChatUserId}
           isEnabled={isChatEnabled}
+          readOnly={isChatReadOnly}
         />
       </div>
     </AppShell>

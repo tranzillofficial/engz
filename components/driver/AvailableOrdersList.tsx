@@ -9,12 +9,14 @@ interface AvailableOrdersListProps {
   orders: any[];
   isDriverBlocked: boolean;
   isDriverOnline: boolean;
+  isDriverBusy: boolean;
 }
 
 export function AvailableOrdersList({
   orders,
   isDriverBlocked,
   isDriverOnline,
+  isDriverBusy,
 }: AvailableOrdersListProps) {
   const [isPending, startTransition] = useTransition();
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
@@ -34,6 +36,19 @@ export function AvailableOrdersList({
   };
 
   if (!isDriverOnline) {
+    // Check if the driver is busy (has an active order) vs truly offline
+    if (isDriverBusy) {
+      return (
+        <div className="p-8 text-center bg-amber-50 dark:bg-amber-950/30 rounded-2xl border border-dashed border-amber-200 dark:border-amber-700">
+          <span className="text-3xl block mb-2">🚴</span>
+          <h3 className="font-bold text-sm text-amber-800 dark:text-amber-200">أنت مشغول في رحلة توصيل حالياً</h3>
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+            أكمل الرحلة الحالية أولاً وبعد كده هتقدر تقبل طلبات جديدة تاني.
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="p-8 text-center bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
         <span className="text-3xl block mb-2">😴</span>

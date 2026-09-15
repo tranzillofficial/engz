@@ -237,3 +237,26 @@ export async function getDriverOrders(driverId: string, statusFilter?: OrderStat
 
   return data as unknown as OrderWithDetails[];
 }
+
+/**
+ * Get the driver's currently active order (accepted or in_progress).
+ * Returns just the order ID for lightweight use in the dashboard.
+ */
+export async function getDriverActiveOrderId(driverId: string): Promise<string | null> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('id')
+    .eq('driver_id', driverId)
+    .in('status', ['accepted', 'in_progress'] as never[])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (error || !data) {
+    return null;
+  }
+
+  return (data as { id: string }).id;
+}

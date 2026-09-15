@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
   title: "Engz — منصة توصيل لكل حاجة",
@@ -7,10 +8,20 @@ export const metadata: Metadata = {
     "اطلب أي حاجة من أي مكان. فاكهة، خبز، سوبر ماركت — طلب واحد وسائق يوصلك.",
   keywords: ["توصيل", "delivery", "طلبات", "مصر", "engz"],
   authors: [{ name: "Engz" }],
+  applicationName: "Engz",
+  appleWebApp: {
+    capable: true,
+    title: "Engz",
+    statusBarStyle: "default",
+  },
   icons: {
-    icon: "/assets/images/engz-logo.svg",
+    icon: [
+      { url: "/assets/images/engz-logo.svg", type: "image/svg+xml" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
     shortcut: "/assets/images/engz-logo.svg",
-    apple: "/assets/images/engz-logo.svg",
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
     title: "Engz — منصة توصيل لكل حاجة",
@@ -20,10 +31,25 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#FA3802",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
+// The browser fires "beforeinstallprompt" very early — often before React
+// hydrates. This inline script keeps the event so the install button can use it.
+const INSTALL_PROMPT_CAPTURE = `(function(){try{window.__engzInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__engzInstallPrompt=e;window.dispatchEvent(new Event('engz:installprompt'));});window.addEventListener('appinstalled',function(){window.__engzInstallPrompt=null;});}catch(e){}})();`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ar" dir="rtl" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <script dangerouslySetInnerHTML={{ __html: INSTALL_PROMPT_CAPTURE }} />
+        {children}
+        <ServiceWorkerRegister />
+      </body>
     </html>
   );
 }

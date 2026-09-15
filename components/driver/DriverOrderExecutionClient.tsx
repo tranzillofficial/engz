@@ -226,7 +226,8 @@ export function DriverOrderExecutionClient({ order, driverId }: DriverOrderExecu
         <ChatPanel
           orderId={order.id}
           currentUserId={driverId}
-          isEnabled={currentStatus === 'accepted' || currentStatus === 'in_progress'}
+          isEnabled={currentStatus === 'accepted' || currentStatus === 'in_progress' || currentStatus === 'delivered'}
+          readOnly={currentStatus === 'delivered'}
         />
       </div>
     </AppShell>

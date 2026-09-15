@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Static files served as-is (service worker runs in its own context)
+    "public/**",
   ]),
 ]);
 
