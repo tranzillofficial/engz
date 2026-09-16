@@ -17,6 +17,86 @@ async function ensureAdmin() {
   return user;
 }
 
+// ─── Agent Actions ────────────────────────────────────────────
+export async function createAgentAccountAction(formData: FormData) {
+  await ensureAdmin();
+
+  const email = String(formData.get('email') || '').trim().toLowerCase();
+  const password = String(formData.get('password') || '');
+  const fullName = String(formData.get('full_name') || '').trim();
+  const phone = String(formData.get('phone') || '').trim();
+  const regionId = String(formData.get('region_id') || '').trim();
+
+  if (!email || !password || !fullName || !regionId) {
+    return { error: 'يرجى إدخال الاسم والبريد وكلمة المرور والمنطقة' };
+  }
+  if (password.length < 6) {
+    return { error: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' };
+  }
+
+  const adminSupabase = await createAdminClient();
+
+  const { data: existingUser } = await adminSupabase
+    .from('users')
+    .select('id, role')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (existingUser) {
+    return { error: 'هذا البريد الإلكتروني مستخدم بالفعل' };
+  }
+
+  const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      full_name: fullName,
+      phone,
+      role: 'agent',
+    },
+  });
+
+  if (authError || !authData.user) {
+    return { error: authError?.message || 'فشل إنشاء حساب الوكيل' };
+  }
+
+  const userId = authData.user.id;
+  const { error: userError } = await adminSupabase.from('users').insert({
+    id: userId,
+    email,
+    full_name: fullName,
+    phone,
+    role: 'agent',
+    is_active: true,
+    avatar_url: '',
+  } as never);
+
+  if (userError) {
+    await adminSupabase.auth.admin.deleteUser(userId);
+    return { error: 'فشل إنشاء ملف الوكيل: ' + userError.message };
+  }
+
+  const { error: agentError } = await adminSupabase.from('agents').insert({
+    user_id: userId,
+    region_id: regionId,
+    is_active: true,
+  } as never);
+
+  if (agentError) {
+    await adminSupabase.from('users').delete().eq('id', userId);
+    await adminSupabase.auth.admin.deleteUser(userId);
+    return { error: 'فشل ربط الوكيل بالمنطقة: ' + agentError.message };
+  }
+
+  revalidatePath('/admin/regions');
+  revalidatePath('/engzadmin/regions');
+  revalidatePath('/admin');
+  revalidatePath('/engzadmin');
+
+  return { success: true };
+}
+
 // ─── Pricing Actions ──────────────────────────────────────────
 export async function updatePricingSettingsAction(formData: FormData) {
   await ensureAdmin();
