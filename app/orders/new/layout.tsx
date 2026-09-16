@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 function hideResolvedItemError() {
   const main = document.querySelector('main');
@@ -20,7 +20,7 @@ function hideResolvedItemError() {
   });
 }
 
-export default function NewOrderLayout({ children }: { children: React.ReactNode }) {
+export default function NewOrderLayout({ children }: { children: ReactNode }) {
   useEffect(() => {
     const style = document.createElement('style');
     style.setAttribute('data-engz-order-ux', 'true');
