@@ -3,17 +3,13 @@ import "./globals.css";
 import ServiceWorkerRegister from "@/components/pwa/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
-  title: "Engz — منصة توصيل لكل حاجة",
+  title: "ENgz — منصة توصيل لكل حاجة",
   description:
     "اطلب أي حاجة من أي مكان. فاكهة، خبز، سوبر ماركت — طلب واحد وسائق يوصلك.",
-  keywords: ["توصيل", "delivery", "طلبات", "مصر", "engz"],
-  authors: [{ name: "Engz" }],
-  applicationName: "Engz",
-  appleWebApp: {
-    capable: true,
-    title: "Engz",
-    statusBarStyle: "default",
-  },
+  keywords: ["توصيل", "delivery", "طلبات", "مصر", "ENgz"],
+  authors: [{ name: "ENgz" }],
+  applicationName: "ENgz",
+  appleWebApp: { capable: true, title: "ENgz", statusBarStyle: "default" },
   icons: {
     icon: [
       { url: "/assets/images/engz-logo.svg", type: "image/svg+xml" },
@@ -24,7 +20,7 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   openGraph: {
-    title: "Engz — منصة توصيل لكل حاجة",
+    title: "ENgz — منصة توصيل لكل حاجة",
     description: "اطلب أي حاجة من أي مكان. طلب واحد وسائق يوصلك.",
     type: "website",
     images: ["/assets/images/engz-logo.svg"],
@@ -38,8 +34,6 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-// The browser fires "beforeinstallprompt" very early — often before React
-// hydrates. This inline script keeps the event so the install button can use it.
 const INSTALL_PROMPT_CAPTURE = `(function(){try{window.__engzInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__engzInstallPrompt=e;window.dispatchEvent(new Event('engz:installprompt'));});window.addEventListener('appinstalled',function(){window.__engzInstallPrompt=null;});}catch(e){}})();`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
