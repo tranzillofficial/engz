@@ -3,21 +3,10 @@
 import { useTransition, useState } from 'react';
 import { acceptOrderAction } from '@/lib/actions/drivers';
 import { Card, Button, Alert } from '@/components';
-import Link from 'next/link';
 
-interface AvailableOrdersListProps {
-  orders: any[];
-  isDriverBlocked: boolean;
-  isDriverOnline: boolean;
-  isDriverBusy: boolean;
-}
+interface AvailableOrdersListProps { orders: any[]; isDriverBlocked: boolean; isDriverOnline: boolean; isDriverBusy: boolean; }
 
-export function AvailableOrdersList({
-  orders,
-  isDriverBlocked,
-  isDriverOnline,
-  isDriverBusy,
-}: AvailableOrdersListProps) {
+export function AvailableOrdersList({ orders, isDriverBlocked, isDriverOnline, isDriverBusy }: AvailableOrdersListProps) {
   const [isPending, startTransition] = useTransition();
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -25,132 +14,47 @@ export function AvailableOrdersList({
   const handleAccept = (orderId: string) => {
     setErrorMsg(null);
     setAcceptingId(orderId);
-
     startTransition(async () => {
       const res = await acceptOrderAction(orderId);
-      if (res?.error) {
-        setErrorMsg(res.error);
-        setAcceptingId(null);
-      }
+      if (res?.error) { setErrorMsg(res.error); setAcceptingId(null); }
     });
   };
 
-  if (!isDriverOnline) {
-    // Check if the driver is busy (has an active order) vs truly offline
-    if (isDriverBusy) {
-      return (
-        <div className="p-8 text-center bg-amber-50 dark:bg-amber-950/30 rounded-2xl border border-dashed border-amber-200 dark:border-amber-700">
-          <span className="text-3xl block mb-2">🚴</span>
-          <h3 className="font-bold text-sm text-amber-800 dark:text-amber-200">أنت مشغول في رحلة توصيل حالياً</h3>
-          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-            أكمل الرحلة الحالية أولاً وبعد كده هتقدر تقبل طلبات جديدة تاني.
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="p-8 text-center bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700">
-        <span className="text-3xl block mb-2">😴</span>
-        <h3 className="font-bold text-sm text-gray-800 dark:text-gray-200">أنت حالياً غير متصل</h3>
-        <p className="text-xs text-gray-500 mt-1">
-          قم بالضغط على &quot;ابدأ العمل Online&quot; بالأعلى لظهور الطلبات القريبة منك وقبولها فوراً.
-        </p>
-      </div>
-    );
-  }
-
-  if (isDriverBlocked) {
-    return (
-      <div className="p-8 text-center bg-red-50 dark:bg-red-950/30 rounded-2xl border border-red-200 dark:border-red-800">
-        <span className="text-3xl block mb-2">🚫</span>
-        <h3 className="font-bold text-sm text-red-800 dark:text-red-300">تم إيقاف استقبال الطلبات</h3>
-        <p className="text-xs text-red-600 dark:text-red-400 mt-1">
-          حسابك موقوف لتجاوز حد العمولات. سدد مستحقاتك لاستئناف استقبال وتوصيل الطلبات.
-        </p>
-      </div>
-    );
-  }
+  if (!isDriverOnline && isDriverBusy) return <div className="p-6 text-center bg-amber-50 rounded-3xl border border-amber-200"><span className="text-3xl block mb-2">🚴</span><h3 className="font-black text-sm text-amber-900">أنت في رحلة حالياً</h3><p className="text-xs text-amber-700 mt-1">أكمل الرحلة الحالية أولاً لاستقبال طلب جديد.</p></div>;
+  if (!isDriverOnline) return <div className="p-7 text-center bg-white rounded-3xl border border-gray-100 shadow-sm"><span className="text-3xl block mb-2">🌙</span><h3 className="font-black text-sm text-slate-900">أنت غير متصل</h3><p className="text-xs text-slate-500 mt-1">فعّل Online من الأعلى ليظهر لك الطلبات القريبة.</p></div>;
+  if (isDriverBlocked) return <div className="p-7 text-center bg-rose-50 rounded-3xl border border-rose-200"><span className="text-3xl block mb-2">🚫</span><h3 className="font-black text-sm text-rose-900">استقبال الطلبات متوقف</h3><p className="text-xs text-rose-700 mt-1">سدد مستحقات العمولات لإعادة تفعيل حسابك.</p></div>;
 
   return (
     <div className="space-y-3">
       {errorMsg && <Alert type="error">{errorMsg}</Alert>}
-
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="font-bold text-sm text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
-          <span>الطلبات المتاحة للتوصيل</span>
-          <span className="badge badge-primary">{orders.length}</span>
-        </h3>
-        <span className="text-xs text-gray-400">تحديث لحظي</span>
-      </div>
+      <div className="flex items-end justify-between px-1"><div><h3 className="font-black text-sm text-slate-900">طلبات قريبة منك</h3><p className="text-[11px] text-slate-400 mt-0.5">اقبل الطلب المناسب وابدأ الرحلة فوراً</p></div><span className="px-2.5 py-1 rounded-full bg-orange-50 text-[#FA3802] border border-orange-100 text-[11px] font-black">{orders.length} متاح</span></div>
 
       {orders.length === 0 ? (
-        <div className="p-8 text-center bg-gray-50 dark:bg-gray-800/40 rounded-2xl">
-          <span className="text-3xl block mb-2">🔍</span>
-          <h3 className="font-bold text-sm text-gray-800 dark:text-gray-200">لا توجد طلبات جديدة حالياً</h3>
-          <p className="text-xs text-gray-500 mt-1">
-            أول ما عميل يعمل طلب جديد في نطاقك هيظهرلك هنا فوراً!
-          </p>
-        </div>
+        <div className="p-8 text-center bg-white rounded-3xl border border-gray-100 shadow-sm"><span className="text-3xl block mb-2">🔎</span><h3 className="font-black text-sm text-slate-900">مفيش طلبات متاحة دلوقتي</h3><p className="text-xs text-slate-500 mt-1">خليك Online وهتظهر الطلبات الجديدة هنا تلقائياً.</p></div>
       ) : (
         <div className="space-y-3">
           {orders.map((order) => {
-            const isThisPending = isPending && acceptingId === order.id;
-
+            const busy = isPending && acceptingId === order.id;
             return (
-              <Card key={order.id} className="p-4 border-2 border-indigo-50 dark:border-gray-800 hover:border-indigo-300 transition-all">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <span className="text-xs font-bold text-gray-400">طلب #{order.id.slice(0, 8)}</span>
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100 mt-0.5">
-                      {order.customer?.full_name || 'عميل إنجز'}
-                    </h4>
+              <Card key={order.id} className="p-0 overflow-hidden border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                <div className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0"><span className="text-[10px] font-black text-slate-400">طلب #{order.id.slice(0, 8)}</span><h4 className="font-black text-sm text-slate-900 mt-1">{order.customer?.full_name || 'عميل ENgz'}</h4></div>
+                    <div className="text-left shrink-0"><span className="text-lg font-black text-emerald-600">{order.delivery_fee} <span className="text-xs">ج.م</span></span>{order.distanceToPickupKm !== undefined && <span className="block text-[10px] text-slate-400 mt-0.5">{order.distanceToPickupKm.toFixed(1)} كم منك</span>}</div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-base font-black text-emerald-600 dark:text-emerald-400">
-                      {order.delivery_fee} ج.م
-                    </span>
-                    {order.distanceToPickupKm !== undefined && (
-                      <span className="block text-[11px] text-gray-400">
-                        يبعد عنك: {order.distanceToPickupKm.toFixed(1)} كم
-                      </span>
-                    )}
-                  </div>
-                </div>
 
-                {/* Items Summary */}
-                <div className="bg-gray-50 dark:bg-gray-800/60 p-2.5 rounded-lg text-xs mb-3 space-y-1">
-                  <div className="font-semibold text-gray-700 dark:text-gray-300">الأصناف:</div>
-                  <div className="text-gray-600 dark:text-gray-400 line-clamp-2">
-                    {order.order_items?.map((it: any) => `${it.quantity}x ${it.description}`).join(' • ') || 'أصناف متنوعة'}
-                  </div>
-                </div>
+                  <div className="mt-4 p-3 rounded-2xl bg-slate-50 border border-slate-100"><p className="text-[10px] font-black text-slate-400 mb-1">الأصناف</p><p className="text-xs font-bold text-slate-700 leading-5 line-clamp-2">{order.order_items?.map((it: any) => `${it.quantity}× ${it.description}`).join(' • ') || 'أصناف متنوعة'}</p></div>
 
-                {/* Locations */}
-                <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400 mb-3">
-                  <div className="flex items-center gap-1.5 truncate">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                    <span className="font-medium text-gray-500">استلام:</span>
-                    <span className="truncate">{order.pickup_address}</span>
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-start gap-2 text-xs"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 mt-1 shrink-0"/><div className="min-w-0"><span className="text-[10px] font-bold text-slate-400">الاستلام</span><p className="font-semibold text-slate-700 truncate">{order.pickup_address}</p></div></div>
+                    <div className="flex items-start gap-2 text-xs"><span className="w-2.5 h-2.5 rounded-full bg-[#FA3802] mt-1 shrink-0"/><div className="min-w-0"><span className="text-[10px] font-bold text-slate-400">التسليم</span><p className="font-semibold text-slate-700 truncate">{order.dropoff_address}</p></div></div>
                   </div>
-                  <div className="flex items-center gap-1.5 truncate">
-                    <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
-                    <span className="font-medium text-gray-500">تسليم:</span>
-                    <span className="truncate">{order.dropoff_address}</span>
-                  </div>
-                </div>
 
-                {/* Action button */}
-                <Button
-                  type="button"
-                  variant="primary"
-                  size="md"
-                  className="w-full font-bold shadow-md"
-                  onClick={() => handleAccept(order.id)}
-                  disabled={isThisPending || isPending}
-                >
-                  {isThisPending ? 'جاري القبول والحجز...' : 'قبول وتنفيذ الطلب 🚴'}
-                </Button>
+                  <div className="mt-4 flex items-center gap-2 p-3 rounded-2xl bg-orange-50 border border-orange-100"><span className="text-lg">💰</span><div><p className="text-[10px] text-orange-700 font-bold">أجرك على الرحلة</p><p className="text-xs font-black text-[#FA3802]">{order.delivery_fee} جنيه قبل أي مستحقات عمولة</p></div></div>
+
+                  <Button type="button" variant="primary" size="md" className="w-full mt-4 font-black shadow-md shadow-orange-500/15 focus-visible:ring-2 focus-visible:ring-[#FA3802]/40" onClick={() => handleAccept(order.id)} disabled={busy || isPending}>{busy ? 'جاري حجز الطلب لك...' : 'قبول الطلب والبدء 🚴'}</Button>
+                  <p className="text-[10px] text-center text-slate-400 mt-2">بمجرد القبول، يختفي الطلب من قائمة الطيارين الآخرين.</p>
+                </div>
               </Card>
             );
           })}
