@@ -10,12 +10,7 @@ interface DriverWalletClientProps {
     id: string;
     commission_balance: number;
     is_blocked: boolean;
-    region?: {
-      whatsapp?: string;
-      instagram?: string;
-      name_ar?: string;
-      name?: string;
-    } | null;
+    region?: { whatsapp?: string; instagram?: string; name_ar?: string; name?: string } | null;
   };
   currentBalance: number;
   totalCommissions: number;
@@ -23,19 +18,9 @@ interface DriverWalletClientProps {
   transactions: CommissionTransaction[];
 }
 
-export function DriverWalletClient({
-  driver,
-  currentBalance,
-  totalCommissions,
-  totalPaid,
-  transactions,
-}: DriverWalletClientProps) {
+export function DriverWalletClient({ driver, currentBalance, totalCommissions, totalPaid, transactions }: DriverWalletClientProps) {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-
-  const [paymentState, paymentAction, isPending] = useActionState(
-    submitManualPaymentAction,
-    null
-  );
+  const [paymentState, paymentAction, isPending] = useActionState(submitManualPaymentAction, null);
 
   const paymentOptions = [
     { value: 'vodafone_cash', label: 'فودافون كاش / محفظة إلكترونية' },
@@ -45,240 +30,112 @@ export function DriverWalletClient({
   ];
 
   return (
-    <AppShell
-      header={
-        <PageHeader
-          title="محفظة العمولات"
-          titleEn="Driver Commission Wallet"
-          backHref="/driver"
-        />
-      }
-    >
+    <AppShell header={<PageHeader title="محفظة الطيار" titleEn="Driver Wallet" backHref="/driver" />}>
       <div className="max-w-md mx-auto py-2 space-y-4">
-        {/* Block Alert if driver is blocked */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="col-span-2 overflow-hidden border-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white shadow-xl">
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold text-slate-300">الرصيد المستحق للمنصة</p>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-4xl font-black tracking-tight">{currentBalance}</span>
+                    <span className="text-sm text-slate-300">ج.م</span>
+                  </div>
+                </div>
+                <span className={`rounded-full px-3 py-1 text-[10px] font-bold ${driver.is_blocked ? 'bg-red-500 text-white' : currentBalance > 0 ? 'bg-amber-400 text-slate-950' : 'bg-emerald-400 text-slate-950'}`}>
+                  {driver.is_blocked ? 'الحساب محظور' : currentBalance > 0 ? 'مستحق السداد' : 'الرصيد خالص'}
+                </span>
+              </div>
+              <div className="mt-5 grid grid-cols-2 gap-3 border-t border-white/10 pt-4 text-xs">
+                <div><span className="block text-slate-400">إجمالي العمولات</span><strong className="mt-1 block text-white">{totalCommissions} ج.م</strong></div>
+                <div><span className="block text-slate-400">إجمالي المسدد</span><strong className="mt-1 block text-emerald-300">{totalPaid} ج.م</strong></div>
+              </div>
+            </div>
+          </Card>
+        </div>
+
         {driver.is_blocked && (
-          <Alert type="error" title="الحساب محظور بسبب تجاوز حد العمولات 🚫">
-            عليك مستحقات غير مسددة بقيمة <strong>{currentBalance} ج.م</strong>.
-            يرجى سداد المبلغ عبر طرق الدفع المتاحة أدناه وإرسال إيصال التحويل لإعادة تفعيل الحساب فوراً.
+          <Alert type="error" title="الحساب محظور بسبب تجاوز حد العمولات">
+            عليك مستحقات بقيمة <strong>{currentBalance} ج.م</strong>. سجّل إشعار السداد بعد التحويل ليتم مراجعته.
           </Alert>
         )}
 
-        {/* Balance Overview Card */}
-        <Card className="p-4 bg-gradient-to-br from-gray-900 to-indigo-950 text-white shadow-xl">
-          <span className="text-xs text-indigo-300 block mb-1">الرصيد المستحق الحالي للمنصة</span>
-          <div className="flex items-baseline justify-between mb-3">
-            <span className="text-3xl font-black tracking-tight">
-              {currentBalance} <span className="text-sm font-normal text-gray-300">جنيه</span>
-            </span>
-            <span
-              className={`text-xs px-2.5 py-1 rounded-full font-bold ${
-                driver.is_blocked ? 'bg-red-500 text-white' : currentBalance > 0 ? 'bg-amber-400 text-gray-950' : 'bg-emerald-400 text-gray-950'
-              }`}
-            >
-              {driver.is_blocked ? 'محظور للتجاوز' : currentBalance > 0 ? 'مستحق السداد' : 'خالص'}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-800 text-xs">
+        <Card className="p-4 space-y-3">
+          <div className="flex items-start justify-between gap-3">
             <div>
-              <span className="text-gray-400 block">إجمالي العمولات المسجلة:</span>
-              <span className="font-bold text-gray-200">{totalCommissions} ج.م</span>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">سداد العمولة</h3>
+              <p className="mt-1 text-[11px] text-gray-500">تواصل مع وكيل منطقتك ثم أرسل إشعار الدفع للمراجعة.</p>
             </div>
-            <div>
-              <span className="text-gray-400 block">إجمالي ما تم سداده:</span>
-              <span className="font-bold text-emerald-400">{totalPaid} ج.م</span>
-            </div>
-          </div>
-        </Card>
-
-        {/* Regional Payment Channels */}
-        <Card className="p-4 space-y-2">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center justify-between">
-            <span>طرق السداد والتواصل مع الوكيل 💳</span>
-            <span className="text-xs text-indigo-600 font-normal">
+            <span className="rounded-lg bg-gray-100 px-2 py-1 text-[10px] font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-300">
               {driver.region?.name_ar || driver.region?.name || 'المنطقة'}
             </span>
-          </h3>
-          <p className="text-xs text-gray-500">
-            يمكنك تحويل العمولة عبر فودافون كاش / إنستاباي والتواصل مع الوكيل لتأكيد الدفع:
-          </p>
+          </div>
 
-          <div className="space-y-2 pt-1">
+          <div className="grid gap-2">
             {driver.region?.whatsapp && (
-              <a
-                href={`https://wa.me/${driver.region.whatsapp}?text=${encodeURIComponent(
-                  `السلام عليكم، أنا الطيار ومحتاج أسدد عمولة بمبلغ ${currentBalance} ج.م`
-                )}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl text-emerald-800 dark:text-emerald-300 text-xs font-semibold no-underline"
-              >
-                <span>💬 تواصل عبر واتساب الوكيل ({driver.region.whatsapp})</span>
-                <span>←</span>
+              <a href={`https://wa.me/${driver.region.whatsapp}?text=${encodeURIComponent(`السلام عليكم، أنا الطيار ومحتاج أسدد عمولة بمبلغ ${currentBalance} ج.م`)}`} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-xl bg-emerald-50 p-3 text-xs font-semibold text-emerald-800 no-underline dark:bg-emerald-950/30 dark:text-emerald-300">
+                <span>تواصل عبر واتساب الوكيل</span><span>←</span>
               </a>
             )}
-
             {driver.region?.instagram && (
-              <a
-                href={`https://instagram.com/${driver.region.instagram}`}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-3 bg-pink-50 dark:bg-pink-950/30 rounded-xl text-pink-800 dark:text-pink-300 text-xs font-semibold no-underline"
-              >
-                <span>📸 إنستجرام الوكيل (@{driver.region.instagram})</span>
-                <span>←</span>
+              <a href={`https://instagram.com/${driver.region.instagram}`} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-xl bg-pink-50 p-3 text-xs font-semibold text-pink-800 no-underline dark:bg-pink-950/30 dark:text-pink-300">
+                <span>إنستجرام الوكيل (@{driver.region.instagram})</span><span>←</span>
               </a>
             )}
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            className="w-full mt-2"
-            onClick={() => setShowPaymentForm(!showPaymentForm)}
-          >
-            {showPaymentForm ? 'إخفاء نموذج تسجيل الدفعة' : '📝 تسجيل إشعار تحويل / سداد يدوي'}
+          <Button type="button" variant="primary" size="md" className="w-full font-bold" onClick={() => setShowPaymentForm((v) => !v)}>
+            {showPaymentForm ? 'إغلاق نموذج الدفع' : 'إرسال إشعار سداد'}
           </Button>
         </Card>
 
-        {/* Manual Payment Submission Form */}
         {showPaymentForm && (
           <Card className="p-4 animate-fade-in">
-            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">
-              تسجيل إشعار دفع جديد
-            </h3>
-            <p className="text-xs text-gray-500 mb-3">
-              سجل تفاصيل التحويل ليقوم الوكيل أو المدير بمراجعته وتأكيد خصمه من رصيدك فوراً.
-            </p>
-
-            <form action={paymentAction} className="space-y-3">
-              {paymentState?.error && (
-                <Alert type="error">{paymentState.error}</Alert>
-              )}
-              {paymentState?.success && (
-                <Alert type="success">تم إرسال إشعار السداد بنجاح! في انتظار مراجعة الوكيل.</Alert>
-              )}
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  المبلغ المحول (ج.م) *
-                </label>
-                <Input
-                  name="amount"
-                  type="number"
-                  step="0.01"
-                  min="1"
-                  defaultValue={currentBalance > 0 ? currentBalance : ''}
-                  placeholder="مثال: 50"
-                  required
-                />
-              </div>
-
-              <div>
-                <Select
-                  label="طريقة التحويل"
-                  name="payment_method"
-                  required
-                  defaultValue="vodafone_cash"
-                  options={paymentOptions}
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  رقم المرجع / رقم المحول منه (اختياري)
-                </label>
-                <Input
-                  name="reference"
-                  placeholder="مثال: تحويل من رقم 010xxxxxxx"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  ملاحظات إضافية
-                </label>
-                <Textarea
-                  name="notes"
-                  rows={2}
-                  placeholder="أي تفاصيل أخرى بخصوص عملية التحويل..."
-                />
-              </div>
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="md"
-                className="w-full font-bold"
-                disabled={isPending}
-              >
-                {isPending ? 'جاري الإرسال...' : 'إرسال إشعار السداد للمراجعة 🚀'}
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">إشعار سداد جديد</h3>
+            <p className="mt-1 text-xs text-gray-500">سيظهر الإشعار فوراً في لوحة الإدارة للمراجعة.</p>
+            <form action={paymentAction} className="mt-4 space-y-3">
+              {paymentState?.error && <Alert type="error">{paymentState.error}</Alert>}
+              {paymentState?.success && <Alert type="success">تم إرسال إشعار السداد بنجاح. في انتظار المراجعة.</Alert>}
+              <Input name="amount" type="number" step="0.01" min="1" defaultValue={currentBalance > 0 ? currentBalance : ''} placeholder="المبلغ بالجنيه" required />
+              <Select label="طريقة التحويل" name="payment_method" required defaultValue="vodafone_cash" options={paymentOptions} />
+              <Input name="reference" placeholder="رقم المرجع / رقم المحول منه (اختياري)" />
+              <Textarea name="notes" rows={3} placeholder="ملاحظات إضافية (اختياري)" />
+              <Button type="submit" variant="primary" size="md" className="w-full font-bold" disabled={isPending}>
+                {isPending ? 'جاري إرسال الإشعار...' : 'تأكيد وإرسال الإشعار'}
               </Button>
             </form>
           </Card>
         )}
 
-        {/* Transaction History Ledger */}
         <Card className="p-4">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3">
-            سجل العمليات والعمولات (Ledger) 📜
-          </h3>
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">سجل المحفظة</h3>
+              <p className="text-[11px] text-gray-500">كل العمولات وعمليات السداد</p>
+            </div>
+            <span className="text-[10px] text-gray-400">{transactions.length} عملية</span>
+          </div>
 
           {transactions.length === 0 ? (
-            <p className="text-xs text-gray-500 text-center py-4">
-              لا توجد عمليات مسجلة في محفظتك حتى الآن.
-            </p>
+            <p className="py-6 text-center text-xs text-gray-500">لا توجد عمليات مسجلة في محفظتك حتى الآن.</p>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {transactions.map((tx) => (
-                <div
-                  key={tx.id}
-                  className="p-3 bg-gray-50 dark:bg-gray-800/40 rounded-xl text-xs flex items-start justify-between border border-gray-100 dark:border-gray-800"
-                >
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className={`font-bold ${
-                          tx.transaction_type === 'commission'
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-emerald-600 dark:text-emerald-400'
-                        }`}
-                      >
-                        {tx.transaction_type === 'commission' ? 'عمولة طلب' : 'سداد عمولة'}
-                      </span>
-                      {tx.order_id && (
-                        <span className="text-[11px] text-gray-400">
-                          (طلب #{tx.order_id.slice(0, 6)})
-                        </span>
-                      )}
+                <div key={tx.id} className="flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 p-3 text-xs dark:border-gray-800 dark:bg-gray-800/40">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2 w-2 shrink-0 rounded-full ${tx.transaction_type === 'commission' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                      <span className="font-bold text-gray-800 dark:text-gray-200">{tx.transaction_type === 'commission' ? 'عمولة طلب' : 'سداد عمولة'}</span>
                     </div>
-                    {tx.notes && (
-                      <p className="text-gray-500 text-[11px] mt-0.5">{tx.notes}</p>
-                    )}
-                    <span className="text-[10px] text-gray-400 mt-1 block">
-                      {new Date(tx.created_at).toLocaleDateString('ar-EG', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
+                    {tx.notes && <p className="mt-1 truncate text-[11px] text-gray-500">{tx.notes}</p>}
+                    <span className="mt-1 block text-[10px] text-gray-400">{new Date(tx.created_at).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
-
-                  <div className="text-right">
-                    <span
-                      className={`text-sm font-black ${
-                        tx.transaction_type === 'commission'
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-emerald-600 dark:text-emerald-400'
-                      }`}
-                    >
-                      {tx.transaction_type === 'commission' ? `+${tx.amount}` : `-${tx.amount}`} ج
+                  <div className="shrink-0 text-left">
+                    <span className={`text-sm font-black ${tx.transaction_type === 'commission' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                      {tx.transaction_type === 'commission' ? '+' : '-'}{tx.amount} ج
                     </span>
-                    <span className="block text-[10px] text-gray-400">
-                      الرصيد بعدها: {tx.balance_after} ج
-                    </span>
+                    <span className="block text-[10px] text-gray-400">بعدها: {tx.balance_after} ج</span>
                   </div>
                 </div>
               ))}
