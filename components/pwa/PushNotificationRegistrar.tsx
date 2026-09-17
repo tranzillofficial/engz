@@ -1,0 +1,7 @@
+'use client';
+import {useEffect} from 'react';
+import {createClient} from '@/lib/supabase/client';
+import {savePushSubscription} from '@/lib/actions/notifications';
+export default function PushNotificationRegistrar(){useEffect(()=>{let cancelled=false;(async()=>{try{if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))return;const supabase=createClient();const{data:{user}}=await supabase.auth.getUser();if(!user)return;const registration=await navigator.serviceWorker.ready;let permission=Notification.permission;if(permission==='default')permission=await Notification.requestPermission();if(cancelled||permission!=='granted')return;const publicKey=process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;if(!publicKey)return;const existing=await registration.pushManager.getSubscription();const subscription=existing||await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:publicKeyToUint8Array(publicKey)});await savePushSubscription({endpoint:subscription.endpoint,keys:{p256dh:base64(subscription.getKey('p256dh')!),auth:base64(subscription.getKey('auth')!)}});}catch{}})();return()=>{cancelled=true}},[]);return null}
+function base64(buf:ArrayBuffer){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function publicKeyToUint8Array(key:string){const padding='='.repeat((4-key.length%4)%4);const raw=atob((key+padding).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
