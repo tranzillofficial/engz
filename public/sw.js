@@ -1,52 +1,6 @@
-/* Engz PWA service worker — required so the browser offers "Install app". */
-const CACHE = 'engz-static-v1';
-
-self.addEventListener('install', () => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)));
-      await self.clients.claim();
-    })()
-  );
-});
-
-// Cache static assets only. HTML, API and auth requests always hit the network.
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
-
-  let url;
-  try {
-    url = new URL(req.url);
-  } catch {
-    return;
-  }
-
-  if (url.origin !== self.location.origin) return;
-
-  const isStatic =
-    url.pathname.startsWith('/assets/') ||
-    url.pathname === '/apple-touch-icon.png' ||
-    url.pathname.startsWith('/icon-');
-
-  if (!isStatic) return;
-
-  event.respondWith(
-    (async () => {
-      const cache = await caches.open(CACHE);
-      const cached = await cache.match(req);
-      const network = fetch(req)
-        .then((res) => {
-          if (res && res.status === 200) cache.put(req, res.clone());
-          return res;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })()
-  );
-});
+const CACHE='engz-static-v2';
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
+self.addEventListener('push',event=>{let data={title:'ENgz',body:'لديك إشعار جديد',type:'info'};try{data=event.data?event.data.json():data}catch{}event.waitUntil((async()=>{try{await self.registration.showNotification(data.title,{body:data.body,icon:'/icon-192.png',badge:'/icon-192.png',vibrate:[200,100,200],tag:'engz-notification',renotify:true,data:{url:data.url||'/'}});if('setAppBadge'in self.navigator)await self.navigator.setAppBadge(1)}catch{}})())});
+self.addEventListener('notificationclick',event=>{event.notification.close();event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{const url=event.notification.data?.url||'/';for(const client of list){if('focus'in client)return client.focus().then(()=>client.navigate(url));}return clients.openWindow(url)}))});
+self.addEventListener('fetch',event=>{const req=event.request;if(req.method!=='GET')return;let url;try{url=new URL(req.url)}catch{return}if(url.origin!==self.location.origin)return;const isStatic=url.pathname.startsWith('/assets/')||url.pathname==='/apple-touch-icon.png'||url.pathname.startsWith('/icon-');if(!isStatic)return;event.respondWith((async()=>{const cache=await caches.open(CACHE);const cached=await cache.match(req);const network=fetch(req).then(res=>{if(res&&res.status===200)cache.put(req,res.clone());return res}).catch(()=>cached);return cached||network})())});
