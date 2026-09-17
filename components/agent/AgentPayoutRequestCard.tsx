@@ -1,0 +1,5 @@
+'use client';
+import {useTransition,useState} from 'react';
+import {Card,Button,Input,Alert} from '@/components';
+import {requestAgentPayoutAction} from '@/lib/actions/agent';
+export function AgentPayoutRequestCard({balance}:{balance:number}){const[pending,start]=useTransition();const[result,setResult]=useState<any>(null);const submit=(fd:FormData)=>{setResult(null);start(async()=>setResult(await requestAgentPayoutAction(fd)))};return <Card className="p-4 space-y-3"><div><h2 className="text-sm font-black">طلب سحب الأرباح</h2><p className="text-xs text-slate-500 mt-1">المتاح للسحب: <b>{balance.toLocaleString('ar-EG')} ج.م</b>. اكتب رقم التحويل لهذا الطلب فقط.</p></div>{result?.error&&<Alert type="error">{result.error}</Alert>}{result?.success&&<Alert type="success">تم إرسال طلب السحب للإدارة.</Alert>}<form action={submit} className="grid grid-cols-1 sm:grid-cols-3 gap-2"><Input name="amount" type="number" min="1" step="0.01" max={balance} placeholder="المبلغ" required/><Input name="payout_phone" inputMode="tel" placeholder="رقم التحويل" required/><Button type="submit" disabled={pending}>{pending?'جاري الإرسال...':'طلب السحب'}</Button></form></Card>}
