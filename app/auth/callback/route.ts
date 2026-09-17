@@ -18,9 +18,17 @@ export async function GET(request: Request) {
 
   const authUser = data.user;
   const admin = await createAdminClient();
-  const { data: existing } = await admin.from('users').select('id, role, is_active').eq('id', authUser.id).maybeSingle();
+  const { data: existing } = await admin
+    .from('users')
+    .select('id, role, is_active')
+    .eq('id', authUser.id)
+    .maybeSingle();
 
-  if (!existing) {
+  // Keep the narrow shape explicit so this route remains compatible with
+  // Supabase's generated query inference even when the schema types change.
+  const existingUser = existing as { id: string; role: string; is_active: boolean } | null;
+
+  if (!existingUser) {
     const metadata = (authUser.user_metadata || {}) as Record<string, unknown>;
     const email = authUser.email || '';
     const fullName = String(metadata.full_name || metadata.name || email.split('@')[0] || 'عميل إنجز');
@@ -34,8 +42,8 @@ export async function GET(request: Request) {
       role: 'customer',
       is_active: true,
       avatar_url: avatarUrl,
-    } as never);
-  } else if (!existing.is_active) {
+    });
+  } else if (!existingUser.is_active) {
     await supabase.auth.signOut();
     return NextResponse.redirect(new URL('/login?error=disabled', url.origin));
   }
