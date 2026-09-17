@@ -11,12 +11,7 @@ export default async function AdminPricingPage() {
     redirect('/login');
   }
 
-  const { settings, distanceTiers } = await getAdminPricingConfig();
+  const { settings } = await getAdminPricingConfig();
 
-  return (
-    <AdminPricingClient
-      settings={settings}
-      distanceTiers={distanceTiers}
-    />
-  );
+  return <AdminPricingClient settings={settings} />;
 }
