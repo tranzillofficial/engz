@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -17,24 +18,29 @@ export async function GET(request: Request) {
   }
 
   const authUser = data.user;
-  const admin = await createAdminClient();
-  const { data: existing } = await admin
+
+  // The generated Database type in this project can infer a missing/changed
+  // users table shape as `never`. This callback only needs a small, known shape,
+  // so use an untyped Supabase client locally instead of weakening the global
+  // database types or relying on `never` casts.
+  const admin = (await createAdminClient()) as unknown as SupabaseClient;
+  const { data: existing, error: existingError } = await admin
     .from('users')
     .select('id, role, is_active')
     .eq('id', authUser.id)
     .maybeSingle();
 
-  // Keep the narrow shape explicit so this route remains compatible with
-  // Supabase's generated query inference even when the schema types change.
-  const existingUser = existing as { id: string; role: string; is_active: boolean } | null;
+  if (existingError) {
+    return NextResponse.redirect(new URL('/login?error=profile', url.origin));
+  }
 
-  if (!existingUser) {
+  if (!existing) {
     const metadata = (authUser.user_metadata || {}) as Record<string, unknown>;
     const email = authUser.email || '';
     const fullName = String(metadata.full_name || metadata.name || email.split('@')[0] || 'عميل إنجز');
     const avatarUrl = String(metadata.avatar_url || metadata.picture || '');
 
-    await admin.from('users').upsert({
+    const { error: profileError } = await admin.from('users').upsert({
       id: authUser.id,
       email,
       full_name: fullName,
@@ -43,7 +49,11 @@ export async function GET(request: Request) {
       is_active: true,
       avatar_url: avatarUrl,
     });
-  } else if (!existingUser.is_active) {
+
+    if (profileError) {
+      return NextResponse.redirect(new URL('/login?error=profile', url.origin));
+    }
+  } else if (existing.is_active === false) {
     await supabase.auth.signOut();
     return NextResponse.redirect(new URL('/login?error=disabled', url.origin));
   }
