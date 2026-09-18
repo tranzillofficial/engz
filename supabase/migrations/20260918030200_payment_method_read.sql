@@ -1,0 +1,2 @@
+drop policy if exists "admin payment methods read" on public.admin_payment_methods;
+create policy "active payment methods authenticated read" on public.admin_payment_methods for select to authenticated using(is_active=true or (select public.get_user_role())='admin');

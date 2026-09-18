@@ -282,6 +282,8 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           </form>
         )}
 
+        {isOwnerCustomer && order.driver && order.status !== 'cancelled' && (<Card className="p-4 border border-rose-100 bg-rose-50/40"><h3 className="text-sm font-black text-rose-800">مشكلة في الطلب؟</h3><p className="text-xs text-rose-700 mt-1">يمكنك إرسال شكوى على الطيار، وستصل للوكيل المختص والإدارة.</p><a href={`/orders/${order.id}/complaint`} className="btn btn-sm btn-outline mt-3 inline-flex">رفع شكوى</a></Card>)}
+
         {/* Live Chat Panel with Driver */}
         <ChatPanel
           orderId={order.id}

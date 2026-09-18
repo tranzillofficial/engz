@@ -427,7 +427,7 @@ export function ChatPanel({ orderId, currentUserId, isEnabled, readOnly = false 
       <style>{`
         .chat-panel {
           position: fixed;
-          bottom: 80px;
+          bottom: 145px;
           left: 16px;
           right: 16px;
           z-index: 1000;
@@ -450,7 +450,7 @@ export function ChatPanel({ orderId, currentUserId, isEnabled, readOnly = false 
           box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
           transition: all 0.3s ease;
           position: fixed;
-          bottom: 90px;
+          bottom: 155px;
           left: 50%;
           transform: translateX(-50%);
           z-index: 1000;

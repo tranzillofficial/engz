@@ -1,0 +1,4 @@
+drop policy if exists "complaints customer read" on public.complaints;
+drop policy if exists "complaints agent update" on public.complaints;
+create policy "complaints customer read" on public.complaints for select to authenticated using(customer_id=auth.uid() or (select public.get_user_role())='admin' or agent_id in (select id from public.agents where user_id=auth.uid()));
+create policy "complaints agent update" on public.complaints for update to authenticated using((select public.get_user_role())='admin' or agent_id in (select id from public.agents where user_id=auth.uid())) with check((select public.get_user_role())='admin' or agent_id in (select id from public.agents where user_id=auth.uid()));
