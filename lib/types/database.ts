@@ -40,7 +40,7 @@ export type PricingSnapshot = {
   calculated_at: string;
 };
 
-export type Order = Tables<'orders'> & {
+export type Order = Omit<Tables<'orders'>, 'pricing_snapshot'> & {
   pricing_snapshot: PricingSnapshot | null;
   customer?: User;
   driver?: Driver;
