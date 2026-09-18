@@ -44,11 +44,6 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
     notFound();
   }
 
-  // Security check:
-  // Allowed if:
-  // 1. Guest cookie matches order ID
-  // 2. Logged in customer is owner
-  // 3. Admin / Agent / Assigned Driver
   const isOwnerCustomer = user && user.role === 'customer' && order.customer_id === user.id;
   const isStaffOrDriver = user && (user.role === 'admin' || user.role === 'agent' || user.role === 'driver');
 
@@ -65,7 +60,6 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
   const isChatReadOnly = order.status === 'delivered';
   const currentChatUserId = user ? user.id : order.customer_id;
 
-  // Google Maps embed URL for dropoff location
   const mapsApiKey = process.env.NEXT_PUBLIC_MAPS_API_KEY;
   const hasDropoffCoords =
     order.dropoff_lat &&
@@ -93,7 +87,6 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
       }
     >
       <div className="max-w-md mx-auto py-2 px-2 sm:px-0 space-y-4 pb-24">
-        {/* Status Card */}
         <Card className="p-4 bg-gradient-to-br from-indigo-50/50 to-white border-indigo-100 shadow-xs">
           <div className="flex items-center justify-between mb-3">
             <div>
@@ -138,7 +131,6 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           </div>
         </Card>
 
-        {/* Rating Card when Delivered */}
         {order.status === 'delivered' && (
           <DeliveryRatingCard
             orderId={order.id}
@@ -147,12 +139,10 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           />
         )}
 
-        {/* Guest Conversion Card if placed as guest */}
         {(!user || isGuestAuthorized) && (
-          <GuestAccountConversionCard phone={guestPhone || order.customer?.phone} />
+          <GuestAccountConversionCard phone={guestPhone ?? order.customer?.phone ?? undefined} />
         )}
 
-        {/* Assigned Driver Details (if accepted) */}
         {order.driver && (
           <Card className="p-4 border-l-4 border-l-emerald-500 shadow-xs">
             <h3 className="text-xs font-bold text-gray-500 mb-2">بيانات الطيار المسؤول 🛵</h3>
@@ -182,7 +172,6 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           </Card>
         )}
 
-        {/* Order Items List */}
         <Card className="p-4 shadow-xs">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
@@ -214,14 +203,12 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           </div>
         </Card>
 
-        {/* Delivery Address — only dropoff, no pickup, no distance */}
         <Card className="p-4 space-y-3 shadow-xs">
           <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
             <span>📍</span>
             <span>عنوان التوصيل</span>
           </h3>
 
-          {/* Full address text */}
           <div className="p-3 bg-orange-50/60 rounded-xl border border-orange-100 text-xs">
             <span className="font-bold text-gray-700 block mb-0.5">عنوانك:</span>
             <p className="text-gray-800 font-semibold leading-relaxed">
@@ -229,14 +216,12 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             </p>
           </div>
 
-          {/* Customer notes */}
           {order.customer_notes && (
             <div className="p-2.5 bg-gray-50 rounded-lg text-gray-600 text-xs">
               <strong>ملاحظات التوصيل:</strong> {order.customer_notes}
             </div>
           )}
 
-          {/* Map embed if coords exist */}
           {mapsEmbedUrl && (
             <div className="rounded-xl overflow-hidden border border-gray-200 shadow-xs">
               <iframe
@@ -253,7 +238,6 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           )}
         </Card>
 
-        {/* Delivery Fee Summary */}
         <Card className="p-4 bg-orange-50/50 border border-orange-100 shadow-xs">
           <div className="flex items-center justify-between">
             <div>
@@ -270,7 +254,6 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
           </div>
         </Card>
 
-        {/* Cancel Action (if still pending) */}
         {order.status === 'pending' && (
           <form action={handleCancel} className="pt-2">
             <Button
@@ -289,7 +272,6 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
 
         {isOwnerCustomer && existingComplaint && (<Card className="p-4 border border-amber-200 bg-amber-50/50"><h3 className="text-sm font-black text-amber-900">متابعة الشكوى</h3><p className="text-xs text-amber-800 mt-1">{existingComplaint.status === 'agent_review' ? 'تم استلام الشكوى لدى الوكيل وجارٍ مراجعتها.' : existingComplaint.status === 'agent_actioned' ? 'الوكيل راجع الشكوى واتخذ إجراءً.' : existingComplaint.status === 'admin_review' ? 'تم رفع الشكوى للإدارة للمراجعة.' : 'الشكوى مسجلة وتحت المتابعة.'}</p>{existingComplaint.agent_action && <p className="text-xs text-slate-700 mt-2">إجراء الوكيل: {existingComplaint.agent_action}</p>}</Card>)}
 
-        {/* Live Chat Panel with Driver */}
         <ChatPanel
           orderId={order.id}
           currentUserId={currentChatUserId}
@@ -300,4 +282,3 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
     </AppShell>
   );
 }
-
