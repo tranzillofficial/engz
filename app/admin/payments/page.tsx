@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { AppShell, PageHeader } from '@/components';
 import { AdminPaymentsClient } from '@/components/admin/AdminPaymentsClient';
+import { AdminPaymentMethodCard } from '@/components/admin/AdminPaymentMethodCard';
+import { createClient } from '@/lib/supabase/server';
 import type { PaymentStatus } from '@/lib/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +26,8 @@ export default async function AdminPaymentsPage({ searchParams }: AdminPaymentsP
   const statusFilter = resolvedParams.status as PaymentStatus | undefined;
 
   const payments = await getAdminPayments(statusFilter);
+  const db = await createClient();
+  const { data: paymentMethod } = await db.from('admin_payment_methods').select('title,method,account_name,account_number,instructions').eq('is_active',true).order('created_at',{ascending:false}).limit(1).maybeSingle();
 
   return (
     <AppShell
@@ -65,6 +69,7 @@ export default async function AdminPaymentsPage({ searchParams }: AdminPaymentsP
           </Link>
         </div>
 
+        <AdminPaymentMethodCard method={paymentMethod} />
         <AdminPaymentsClient payments={payments} />
       </div>
     </AppShell>

@@ -18,8 +18,11 @@ export default async function AdminDashboardPage() {
     { href: '/admin', label: 'الرئيسية', labelEn: 'Overview', icon: <span aria-hidden>▦</span> },
     { href: '/admin/orders', label: 'الطلبات', labelEn: 'Orders', icon: <span aria-hidden>▣</span> },
     { href: '/admin/drivers', label: 'الطيارين', labelEn: 'Drivers', icon: <span aria-hidden>◉</span> },
+    { href: '/admin/driver-verifications', label: 'اعتماد الطيارين', labelEn: 'Verification', icon: <span aria-hidden>✓</span> },
+    { href: '/admin/regions', label: 'الوكلاء والمناطق', labelEn: 'Agents & Regions', icon: <span aria-hidden>⌖</span> },
     { href: '/admin/pricing', label: 'التسعير', labelEn: 'Pricing', icon: <span aria-hidden>ج</span> },
-    { href: '/admin/payments', label: 'المدفوعات', labelEn: 'Payments', badge: stats.pendingPaymentsCount > 0 ? stats.pendingPaymentsCount : undefined, icon: <span aria-hidden>▤</span> },
+    { href: '/admin/payments', label: 'السداد', labelEn: 'Payments', badge: stats.pendingPaymentsCount > 0 ? stats.pendingPaymentsCount : undefined, icon: <span aria-hidden>▤</span> },
+    { href: '/admin/notifications', label: 'الإشعارات', labelEn: 'Notifications', icon: <span aria-hidden>◌</span> },
   ];
 
   const quickActions = [
