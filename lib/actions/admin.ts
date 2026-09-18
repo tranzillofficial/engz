@@ -1,3 +1,4 @@
+// Admin server actions — payment/admin flows
 'use server';
 import { revalidatePath } from 'next/cache';
 import { getCurrentUser } from '@/lib/services/auth';
