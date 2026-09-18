@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 import { getCurrentUser } from '@/lib/services/auth';
 import { getOrderById } from '@/lib/services/orders';
 import { notFound, redirect } from 'next/navigation';
@@ -36,6 +37,8 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
   }
 
   const order = await getOrderById(id);
+  const complaintDb = await createClient();
+  const { data: existingComplaint } = user && user.role === 'customer' ? await complaintDb.from('complaints').select('status,agent_action,created_at').eq('order_id',id).eq('customer_id',user.id).order('created_at',{ascending:false}).limit(1).maybeSingle() : { data: null } as any;
 
   if (!order) {
     notFound();
@@ -283,6 +286,8 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
         )}
 
         {isOwnerCustomer && order.driver && order.status !== 'cancelled' && (<Card className="p-4 border border-rose-100 bg-rose-50/40"><h3 className="text-sm font-black text-rose-800">مشكلة في الطلب؟</h3><p className="text-xs text-rose-700 mt-1">يمكنك إرسال شكوى على الطيار، وستصل للوكيل المختص والإدارة.</p><a href={`/orders/${order.id}/complaint`} className="btn btn-sm btn-outline mt-3 inline-flex">رفع شكوى</a></Card>)}
+
+        {isOwnerCustomer && existingComplaint && (<Card className="p-4 border border-amber-200 bg-amber-50/50"><h3 className="text-sm font-black text-amber-900">متابعة الشكوى</h3><p className="text-xs text-amber-800 mt-1">{existingComplaint.status === 'agent_review' ? 'تم استلام الشكوى لدى الوكيل وجارٍ مراجعتها.' : existingComplaint.status === 'agent_actioned' ? 'الوكيل راجع الشكوى واتخذ إجراءً.' : existingComplaint.status === 'admin_review' ? 'تم رفع الشكوى للإدارة للمراجعة.' : 'الشكوى مسجلة وتحت المتابعة.'}</p>{existingComplaint.agent_action && <p className="text-xs text-slate-700 mt-2">إجراء الوكيل: {existingComplaint.agent_action}</p>}</Card>)}
 
         {/* Live Chat Panel with Driver */}
         <ChatPanel
