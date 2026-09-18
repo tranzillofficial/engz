@@ -1,1 +1,1365 @@
-{"types":"export type Json =\n  | string\n  | number\n  | boolean\n  | null\n  | { [key: string]: Json | undefined }\n  | Json[]\n\nexport type Database = {\n  // Allows to automatically instantiate createClient with right options\n  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)\n  __InternalSupabase: {\n    PostgrestVersion: \"14.5\"\n  }\n  public: {\n    Tables: {\n      agent_payout_requests: {\n        Row: {\n          admin_notes: string | null\n          agent_id: string\n          amount: number\n          created_at: string\n          id: string\n          payout_phone: string\n          reviewed_at: string | null\n          reviewed_by: string | null\n          status: Database[\"public\"][\"Enums\"][\"payment_status\"]\n          updated_at: string\n        }\n        Insert: {\n          admin_notes?: string | null\n          agent_id: string\n          amount: number\n          created_at?: string\n          id?: string\n          payout_phone: string\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"payment_status\"]\n          updated_at?: string\n        }\n        Update: {\n          admin_notes?: string | null\n          agent_id?: string\n          amount?: number\n          created_at?: string\n          id?: string\n          payout_phone?: string\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"payment_status\"]\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"agent_payout_requests_agent_id_fkey\"\n            columns: [\"agent_id\"]\n            isOneToOne: false\n            referencedRelation: \"agents\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"agent_payout_requests_reviewed_by_fkey\"\n            columns: [\"reviewed_by\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      agent_payouts: {\n        Row: {\n          agent_id: string\n          amount: number\n          created_at: string\n          created_by: string\n          id: string\n          notes: string\n          payment_method: string\n          reference: string\n          reviewed_at: string | null\n          reviewed_by: string | null\n          status: Database[\"public\"][\"Enums\"][\"payment_status\"]\n          updated_at: string\n        }\n        Insert: {\n          agent_id: string\n          amount: number\n          created_at?: string\n          created_by: string\n          id?: string\n          notes?: string\n          payment_method?: string\n          reference?: string\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"payment_status\"]\n          updated_at?: string\n        }\n        Update: {\n          agent_id?: string\n          amount?: number\n          created_at?: string\n          created_by?: string\n          id?: string\n          notes?: string\n          payment_method?: string\n          reference?: string\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"payment_status\"]\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"agent_payouts_agent_id_fkey\"\n            columns: [\"agent_id\"]\n            isOneToOne: false\n            referencedRelation: \"agents\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"agent_payouts_created_by_fkey\"\n            columns: [\"created_by\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"agent_payouts_reviewed_by_fkey\"\n            columns: [\"reviewed_by\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      agents: {\n        Row: {\n          commission_balance: number\n          created_at: string\n          id: string\n          is_active: boolean\n          payout_phone: string | null\n          region_id: string\n          updated_at: string\n          user_id: string\n        }\n        Insert: {\n          commission_balance?: number\n          created_at?: string\n          id?: string\n          is_active?: boolean\n          payout_phone?: string | null\n          region_id: string\n          updated_at?: string\n          user_id: string\n        }\n        Update: {\n          commission_balance?: number\n          created_at?: string\n          id?: string\n          is_active?: boolean\n          payout_phone?: string | null\n          region_id?: string\n          updated_at?: string\n          user_id?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"agents_region_id_fkey\"\n            columns: [\"region_id\"]\n            isOneToOne: false\n            referencedRelation: \"regions\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"agents_user_id_fkey\"\n            columns: [\"user_id\"]\n            isOneToOne: true\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      audit_logs: {\n        Row: {\n          action: string\n          created_at: string\n          entity_id: string | null\n          entity_type: string\n          id: string\n          ip_address: string | null\n          new_data: Json | null\n          old_data: Json | null\n          user_id: string | null\n        }\n        Insert: {\n          action: string\n          created_at?: string\n          entity_id?: string | null\n          entity_type: string\n          id?: string\n          ip_address?: string | null\n          new_data?: Json | null\n          old_data?: Json | null\n          user_id?: string | null\n        }\n        Update: {\n          action?: string\n          created_at?: string\n          entity_id?: string | null\n          entity_type?: string\n          id?: string\n          ip_address?: string | null\n          new_data?: Json | null\n          old_data?: Json | null\n          user_id?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"audit_logs_user_id_fkey\"\n            columns: [\"user_id\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      chat_messages: {\n        Row: {\n          created_at: string\n          expires_at: string\n          id: string\n          image_url: string | null\n          is_saved_by_admin: boolean\n          message_text: string | null\n          order_id: string\n          saved_by: string | null\n          sender_id: string\n        }\n        Insert: {\n          created_at?: string\n          expires_at?: string\n          id?: string\n          image_url?: string | null\n          is_saved_by_admin?: boolean\n          message_text?: string | null\n          order_id: string\n          saved_by?: string | null\n          sender_id: string\n        }\n        Update: {\n          created_at?: string\n          expires_at?: string\n          id?: string\n          image_url?: string | null\n          is_saved_by_admin?: boolean\n          message_text?: string | null\n          order_id?: string\n          saved_by?: string | null\n          sender_id?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"chat_messages_order_id_fkey\"\n            columns: [\"order_id\"]\n            isOneToOne: false\n            referencedRelation: \"orders\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"chat_messages_saved_by_fkey\"\n            columns: [\"saved_by\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"chat_messages_sender_id_fkey\"\n            columns: [\"sender_id\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      commission_tiers: {\n        Row: {\n          commission_type: Database[\"public\"][\"Enums\"][\"commission_type\"]\n          commission_value: number\n          created_at: string\n          id: string\n          is_active: boolean\n          max_orders: number | null\n          min_orders: number\n          sort_order: number\n          updated_at: string\n        }\n        Insert: {\n          commission_type?: Database[\"public\"][\"Enums\"][\"commission_type\"]\n          commission_value?: number\n          created_at?: string\n          id?: string\n          is_active?: boolean\n          max_orders?: number | null\n          min_orders: number\n          sort_order?: number\n          updated_at?: string\n        }\n        Update: {\n          commission_type?: Database[\"public\"][\"Enums\"][\"commission_type\"]\n          commission_value?: number\n          created_at?: string\n          id?: string\n          is_active?: boolean\n          max_orders?: number | null\n          min_orders?: number\n          sort_order?: number\n          updated_at?: string\n        }\n        Relationships: []\n      }\n      commission_transactions: {\n        Row: {\n          amount: number\n          balance_after: number\n          created_at: string\n          driver_id: string\n          id: string\n          notes: string | null\n          order_id: string | null\n          tier_snapshot: Json | null\n          transaction_type: Database[\"public\"][\"Enums\"][\"transaction_type\"]\n        }\n        Insert: {\n          amount: number\n          balance_after: number\n          created_at?: string\n          driver_id: string\n          id?: string\n          notes?: string | null\n          order_id?: string | null\n          tier_snapshot?: Json | null\n          transaction_type?: Database[\"public\"][\"Enums\"][\"transaction_type\"]\n        }\n        Update: {\n          amount?: number\n          balance_after?: number\n          created_at?: string\n          driver_id?: string\n          id?: string\n          notes?: string | null\n          order_id?: string | null\n          tier_snapshot?: Json | null\n          transaction_type?: Database[\"public\"][\"Enums\"][\"transaction_type\"]\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"commission_transactions_driver_id_fkey\"\n            columns: [\"driver_id\"]\n            isOneToOne: false\n            referencedRelation: \"drivers\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"commission_transactions_order_id_fkey\"\n            columns: [\"order_id\"]\n            isOneToOne: false\n            referencedRelation: \"orders\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      complaints: {\n        Row: {\n          admin_action: string | null\n          admin_action_at: string | null\n          agent_action: string | null\n          agent_action_at: string | null\n          agent_id: string | null\n          category: string\n          created_at: string\n          customer_id: string\n          description: string\n          driver_id: string | null\n          escalated_at: string | null\n          escalated_by: string | null\n          id: string\n          order_id: string\n          status: string\n          subject: string\n          updated_at: string\n        }\n        Insert: {\n          admin_action?: string | null\n          admin_action_at?: string | null\n          agent_action?: string | null\n          agent_action_at?: string | null\n          agent_id?: string | null\n          category?: string\n          created_at?: string\n          customer_id: string\n          description: string\n          driver_id?: string | null\n          escalated_at?: string | null\n          escalated_by?: string | null\n          id?: string\n          order_id: string\n          status?: string\n          subject: string\n          updated_at?: string\n        }\n        Update: {\n          admin_action?: string | null\n          admin_action_at?: string | null\n          agent_action?: string | null\n          agent_action_at?: string | null\n          agent_id?: string | null\n          category?: string\n          created_at?: string\n          customer_id?: string\n          description?: string\n          driver_id?: string | null\n          escalated_at?: string | null\n          escalated_by?: string | null\n          id?: string\n          order_id?: string\n          status?: string\n          subject?: string\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"complaints_agent_id_fkey\"\n            columns: [\"agent_id\"]\n            isOneToOne: false\n            referencedRelation: \"agents\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"complaints_customer_id_fkey\"\n            columns: [\"customer_id\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"complaints_driver_id_fkey\"\n            columns: [\"driver_id\"]\n            isOneToOne: false\n            referencedRelation: \"drivers\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"complaints_escalated_by_fkey\"\n            columns: [\"escalated_by\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"complaints_order_id_fkey\"\n            columns: [\"order_id\"]\n            isOneToOne: false\n            referencedRelation: \"orders\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      driver_applications: {\n        Row: {\n          address: string\n          age: number\n          created_at: string\n          created_user_id: string | null\n          full_name: string\n          id: string\n          id_card_back_metadata: Json | null\n          id_card_back_url: string\n          id_card_front_metadata: Json | null\n          id_card_front_url: string\n          personal_photo_url: string | null\n          phone: string\n          rejection_reason: string | null\n          reviewed_at: string | null\n          reviewed_by: string | null\n          status: string\n          updated_at: string\n          vehicle_type: string\n        }\n        Insert: {\n          address: string\n          age: number\n          created_at?: string\n          created_user_id?: string | null\n          full_name: string\n          id?: string\n          id_card_back_metadata?: Json | null\n          id_card_back_url: string\n          id_card_front_metadata?: Json | null\n          id_card_front_url: string\n          personal_photo_url?: string | null\n          phone: string\n          rejection_reason?: string | null\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: string\n          updated_at?: string\n          vehicle_type?: string\n        }\n        Update: {\n          address?: string\n          age?: number\n          created_at?: string\n          created_user_id?: string | null\n          full_name?: string\n          id?: string\n          id_card_back_metadata?: Json | null\n          id_card_back_url?: string\n          id_card_front_metadata?: Json | null\n          id_card_front_url?: string\n          personal_photo_url?: string | null\n          phone?: string\n          rejection_reason?: string | null\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: string\n          updated_at?: string\n          vehicle_type?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"driver_applications_created_user_id_fkey\"\n            columns: [\"created_user_id\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"driver_applications_reviewed_by_fkey\"\n            columns: [\"reviewed_by\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      drivers: {\n        Row: {\n          address: string | null\n          age: number | null\n          agent_id: string | null\n          commission_balance: number\n          created_at: string\n          current_lat: number | null\n          current_lng: number | null\n          id: string\n          id_card_back_url: string | null\n          id_card_front_url: string | null\n          is_active: boolean\n          is_blocked: boolean\n          personal_photo_url: string | null\n          region_id: string | null\n          registration_code: string | null\n          status: Database[\"public\"][\"Enums\"][\"driver_status\"]\n          total_completed_orders: number\n          updated_at: string\n          user_id: string\n          vehicle_type: string | null\n          verification_complete: boolean\n          verification_id_card_back_url: string\n          verification_id_card_front_url: string\n          verification_personal_photo_url: string\n          verification_required: boolean\n        }\n        Insert: {\n          address?: string | null\n          age?: number | null\n          agent_id?: string | null\n          commission_balance?: number\n          created_at?: string\n          current_lat?: number | null\n          current_lng?: number | null\n          id?: string\n          id_card_back_url?: string | null\n          id_card_front_url?: string | null\n          is_active?: boolean\n          is_blocked?: boolean\n          personal_photo_url?: string | null\n          region_id?: string | null\n          registration_code?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"driver_status\"]\n          total_completed_orders?: number\n          updated_at?: string\n          user_id: string\n          vehicle_type?: string | null\n          verification_complete?: boolean\n          verification_id_card_back_url?: string\n          verification_id_card_front_url?: string\n          verification_personal_photo_url?: string\n          verification_required?: boolean\n        }\n        Update: {\n          address?: string | null\n          age?: number | null\n          agent_id?: string | null\n          commission_balance?: number\n          created_at?: string\n          current_lat?: number | null\n          current_lng?: number | null\n          id?: string\n          id_card_back_url?: string | null\n          id_card_front_url?: string | null\n          is_active?: boolean\n          is_blocked?: boolean\n          personal_photo_url?: string | null\n          region_id?: string | null\n          registration_code?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"driver_status\"]\n          total_completed_orders?: number\n          updated_at?: string\n          user_id?: string\n          vehicle_type?: string | null\n          verification_complete?: boolean\n          verification_id_card_back_url?: string\n          verification_id_card_front_url?: string\n          verification_personal_photo_url?: string\n          verification_required?: boolean\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"drivers_agent_id_fkey\"\n            columns: [\"agent_id\"]\n            isOneToOne: false\n            referencedRelation: \"agents\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"drivers_region_id_fkey\"\n            columns: [\"region_id\"]\n            isOneToOne: false\n            referencedRelation: \"regions\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"drivers_user_id_fkey\"\n            columns: [\"user_id\"]\n            isOneToOne: true\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      notifications: {\n        Row: {\n          body: string\n          created_at: string\n          data: Json\n          id: string\n          is_read: boolean\n          recipient_role: Database[\"public\"][\"Enums\"][\"user_role\"] | null\n          recipient_user_id: string | null\n          title: string\n          type: string\n        }\n        Insert: {\n          body: string\n          created_at?: string\n          data?: Json\n          id?: string\n          is_read?: boolean\n          recipient_role?: Database[\"public\"][\"Enums\"][\"user_role\"] | null\n          recipient_user_id?: string | null\n          title: string\n          type?: string\n        }\n        Update: {\n          body?: string\n          created_at?: string\n          data?: Json\n          id?: string\n          is_read?: boolean\n          recipient_role?: Database[\"public\"][\"Enums\"][\"user_role\"] | null\n          recipient_user_id?: string | null\n          title?: string\n          type?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"notifications_recipient_user_id_fkey\"\n            columns: [\"recipient_user_id\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      order_items: {\n        Row: {\n          created_at: string\n          description: string\n          id: string\n          notes: string | null\n          order_id: string\n          quantity: number\n          sort_order: number\n        }\n        Insert: {\n          created_at?: string\n          description: string\n          id?: string\n          notes?: string | null\n          order_id: string\n          quantity?: number\n          sort_order?: number\n        }\n        Update: {\n          created_at?: string\n          description?: string\n          id?: string\n          notes?: string | null\n          order_id?: string\n          quantity?: number\n          sort_order?: number\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"order_items_order_id_fkey\"\n            columns: [\"order_id\"]\n            isOneToOne: false\n            referencedRelation: \"orders\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      order_status_history: {\n        Row: {\n          changed_by: string | null\n          created_at: string\n          id: string\n          new_status: Database[\"public\"][\"Enums\"][\"order_status\"]\n          notes: string | null\n          old_status: Database[\"public\"][\"Enums\"][\"order_status\"] | null\n          order_id: string\n        }\n        Insert: {\n          changed_by?: string | null\n          created_at?: string\n          id?: string\n          new_status: Database[\"public\"][\"Enums\"][\"order_status\"]\n          notes?: string | null\n          old_status?: Database[\"public\"][\"Enums\"][\"order_status\"] | null\n          order_id: string\n        }\n        Update: {\n          changed_by?: string | null\n          created_at?: string\n          id?: string\n          new_status?: Database[\"public\"][\"Enums\"][\"order_status\"]\n          notes?: string | null\n          old_status?: Database[\"public\"][\"Enums\"][\"order_status\"] | null\n          order_id?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"order_status_history_changed_by_fkey\"\n            columns: [\"changed_by\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"order_status_history_order_id_fkey\"\n            columns: [\"order_id\"]\n            isOneToOne: false\n            referencedRelation: \"orders\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      orders: {\n        Row: {\n          accepted_at: string | null\n          cancelled_at: string | null\n          created_at: string\n          customer_id: string\n          customer_notes: string | null\n          customer_rating: number | null\n          customer_review: string | null\n          delivered_at: string | null\n          delivery_fee: number\n          driver_id: string | null\n          dropoff_address: string\n          dropoff_lat: number\n          dropoff_lng: number\n          id: string\n          order_number: number\n          picked_up_at: string | null\n          pickup_address: string\n          pickup_lat: number\n          pickup_lng: number\n          pricing_snapshot: Json | null\n          rated_at: string | null\n          route_distance_km: number | null\n          route_duration_minutes: number | null\n          status: Database[\"public\"][\"Enums\"][\"order_status\"]\n          updated_at: string\n        }\n        Insert: {\n          accepted_at?: string | null\n          cancelled_at?: string | null\n          created_at?: string\n          customer_id: string\n          customer_notes?: string | null\n          customer_rating?: number | null\n          customer_review?: string | null\n          delivered_at?: string | null\n          delivery_fee?: number\n          driver_id?: string | null\n          dropoff_address: string\n          dropoff_lat: number\n          dropoff_lng: number\n          id?: string\n          order_number?: number\n          picked_up_at?: string | null\n          pickup_address: string\n          pickup_lat: number\n          pickup_lng: number\n          pricing_snapshot?: Json | null\n          rated_at?: string | null\n          route_distance_km?: number | null\n          route_duration_minutes?: number | null\n          status?: Database[\"public\"][\"Enums\"][\"order_status\"]\n          updated_at?: string\n        }\n        Update: {\n          accepted_at?: string | null\n          cancelled_at?: string | null\n          created_at?: string\n          customer_id?: string\n          customer_notes?: string | null\n          customer_rating?: number | null\n          customer_review?: string | null\n          delivered_at?: string | null\n          delivery_fee?: number\n          driver_id?: string | null\n          dropoff_address?: string\n          dropoff_lat?: number\n          dropoff_lng?: number\n          id?: string\n          order_number?: number\n          picked_up_at?: string | null\n          pickup_address?: string\n          pickup_lat?: number\n          pickup_lng?: number\n          pricing_snapshot?: Json | null\n          rated_at?: string | null\n          route_distance_km?: number | null\n          route_duration_minutes?: number | null\n          status?: Database[\"public\"][\"Enums\"][\"order_status\"]\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"orders_customer_id_fkey\"\n            columns: [\"customer_id\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"orders_driver_id_fkey\"\n            columns: [\"driver_id\"]\n            isOneToOne: false\n            referencedRelation: \"drivers\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      payment_confirmations: {\n        Row: {\n          amount: number\n          created_at: string\n          driver_id: string\n          id: string\n          notes: string | null\n          payment_method: string\n          proof_image_url: string | null\n          reference: string | null\n          review_notes: string | null\n          reviewed_at: string | null\n          reviewed_by: string | null\n          status: Database[\"public\"][\"Enums\"][\"payment_status\"]\n          updated_at: string\n        }\n        Insert: {\n          amount: number\n          created_at?: string\n          driver_id: string\n          id?: string\n          notes?: string | null\n          payment_method?: string\n          proof_image_url?: string | null\n          reference?: string | null\n          review_notes?: string | null\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"payment_status\"]\n          updated_at?: string\n        }\n        Update: {\n          amount?: number\n          created_at?: string\n          driver_id?: string\n          id?: string\n          notes?: string | null\n          payment_method?: string\n          proof_image_url?: string | null\n          reference?: string | null\n          review_notes?: string | null\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: Database[\"public\"][\"Enums\"][\"payment_status\"]\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"payment_confirmations_driver_id_fkey\"\n            columns: [\"driver_id\"]\n            isOneToOne: false\n            referencedRelation: \"drivers\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"payment_confirmations_reviewed_by_fkey\"\n            columns: [\"reviewed_by\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      payment_methods: {\n        Row: {\n          account_name: string\n          account_number: string\n          created_at: string\n          id: string\n          instructions: string\n          is_active: boolean\n          method_key: string\n          method_name: string\n          updated_at: string\n        }\n        Insert: {\n          account_name?: string\n          account_number?: string\n          created_at?: string\n          id?: string\n          instructions?: string\n          is_active?: boolean\n          method_key: string\n          method_name: string\n          updated_at?: string\n        }\n        Update: {\n          account_name?: string\n          account_number?: string\n          created_at?: string\n          id?: string\n          instructions?: string\n          is_active?: boolean\n          method_key?: string\n          method_name?: string\n          updated_at?: string\n        }\n        Relationships: []\n      }\n      pricing_distance_tiers: {\n        Row: {\n          additional_fee: number\n          created_at: string\n          id: string\n          is_active: boolean\n          max_distance_km: number\n          min_distance_km: number\n          sort_order: number\n        }\n        Insert: {\n          additional_fee?: number\n          created_at?: string\n          id?: string\n          is_active?: boolean\n          max_distance_km: number\n          min_distance_km: number\n          sort_order?: number\n        }\n        Update: {\n          additional_fee?: number\n          created_at?: string\n          id?: string\n          is_active?: boolean\n          max_distance_km?: number\n          min_distance_km?: number\n          sort_order?: number\n        }\n        Relationships: []\n      }\n      pricing_settings: {\n        Row: {\n          additional_fee_per_km: number\n          additional_km_fee: number\n          agent_share_per_order: number\n          base_delivery_fee: number\n          base_distance_km: number\n          commission_block_threshold: number\n          created_at: string\n          currency: string\n          default_search_radius_km: number\n          driver_commission_per_order: number\n          free_orders: number\n          id: string\n          is_active: boolean\n          max_search_radius_km: number\n          platform_share_per_agent_order: number\n          radius_expansion_step_km: number\n          updated_at: string\n        }\n        Insert: {\n          additional_fee_per_km?: number\n          additional_km_fee?: number\n          agent_share_per_order?: number\n          base_delivery_fee?: number\n          base_distance_km?: number\n          commission_block_threshold?: number\n          created_at?: string\n          currency?: string\n          default_search_radius_km?: number\n          driver_commission_per_order?: number\n          free_orders?: number\n          id?: string\n          is_active?: boolean\n          max_search_radius_km?: number\n          platform_share_per_agent_order?: number\n          radius_expansion_step_km?: number\n          updated_at?: string\n        }\n        Update: {\n          additional_fee_per_km?: number\n          additional_km_fee?: number\n          agent_share_per_order?: number\n          base_delivery_fee?: number\n          base_distance_km?: number\n          commission_block_threshold?: number\n          created_at?: string\n          currency?: string\n          default_search_radius_km?: number\n          driver_commission_per_order?: number\n          free_orders?: number\n          id?: string\n          is_active?: boolean\n          max_search_radius_km?: number\n          platform_share_per_agent_order?: number\n          radius_expansion_step_km?: number\n          updated_at?: string\n        }\n        Relationships: []\n      }\n      push_subscriptions: {\n        Row: {\n          auth: string\n          created_at: string\n          endpoint: string\n          id: string\n          p256dh: string\n          updated_at: string\n          user_agent: string | null\n          user_id: string\n        }\n        Insert: {\n          auth: string\n          created_at?: string\n          endpoint: string\n          id?: string\n          p256dh: string\n          updated_at?: string\n          user_agent?: string | null\n          user_id: string\n        }\n        Update: {\n          auth?: string\n          created_at?: string\n          endpoint?: string\n          id?: string\n          p256dh?: string\n          updated_at?: string\n          user_agent?: string | null\n          user_id?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"push_subscriptions_user_id_fkey\"\n            columns: [\"user_id\"]\n            isOneToOne: false\n            referencedRelation: \"users\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      regions: {\n        Row: {\n          created_at: string\n          description: string | null\n          id: string\n          instagram: string | null\n          is_active: boolean\n          name: string\n          name_ar: string\n          updated_at: string\n          whatsapp: string | null\n        }\n        Insert: {\n          created_at?: string\n          description?: string | null\n          id?: string\n          instagram?: string | null\n          is_active?: boolean\n          name: string\n          name_ar?: string\n          updated_at?: string\n          whatsapp?: string | null\n        }\n        Update: {\n          created_at?: string\n          description?: string | null\n          id?: string\n          instagram?: string | null\n          is_active?: boolean\n          name?: string\n          name_ar?: string\n          updated_at?: string\n          whatsapp?: string | null\n        }\n        Relationships: []\n      }\n      users: {\n        Row: {\n          avatar_url: string | null\n          created_at: string\n          email: string\n          full_name: string\n          id: string\n          is_active: boolean\n          phone: string | null\n          role: Database[\"public\"][\"Enums\"][\"user_role\"]\n          updated_at: string\n        }\n        Insert: {\n          avatar_url?: string | null\n          created_at?: string\n          email: string\n          full_name?: string\n          id?: string\n          is_active?: boolean\n          phone?: string | null\n          role?: Database[\"public\"][\"Enums\"][\"user_role\"]\n          updated_at?: string\n        }\n        Update: {\n          avatar_url?: string | null\n          created_at?: string\n          email?: string\n          full_name?: string\n          id?: string\n          is_active?: boolean\n          phone?: string | null\n          role?: Database[\"public\"][\"Enums\"][\"user_role\"]\n          updated_at?: string\n        }\n        Relationships: []\n      }\n    }\n    Views: {\n      [_ in never]: never\n    }\n    Functions: {\n      accept_order: {\n        Args: { p_driver_id: string; p_order_id: string }\n        Returns: Json\n      }\n      cleanup_expired_chat_messages: { Args: never; Returns: number }\n      complete_order_with_commission: {\n        Args: { p_order_id: string }\n        Returns: Json\n      }\n      confirm_payment: {\n        Args: {\n          p_payment_id: string\n          p_review_notes?: string\n          p_reviewer_id: string\n        }\n        Returns: Json\n      }\n      get_agent_region_id: { Args: never; Returns: string }\n      get_driver_id: { Args: never; Returns: string }\n      get_user_role: {\n        Args: never\n        Returns: Database[\"public\"][\"Enums\"][\"user_role\"]\n      }\n    }\n    Enums: {\n      commission_type: \"fixed\" | \"percentage\"\n      driver_status: \"online\" | \"offline\" | \"busy\"\n      order_status:\n        | \"pending\"\n        | \"accepted\"\n        | \"in_progress\"\n        | \"delivered\"\n        | \"cancelled\"\n      payment_status: \"pending\" | \"confirmed\" | \"rejected\"\n      transaction_type: \"commission\" | \"payment\"\n      user_role: \"customer\" | \"driver\" | \"agent\" | \"admin\"\n    }\n    CompositeTypes: {\n      [_ in never]: never\n    }\n  }\n}\n\ntype DatabaseWithoutInternals = Omit<Database, \"__InternalSupabase\">\n\ntype DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, \"public\">]\n\nexport type Tables<\n  DefaultSchemaTableNameOrOptions extends\n    | keyof (DefaultSchema[\"Tables\"] & DefaultSchema[\"Views\"])\n    | { schema: keyof DatabaseWithoutInternals },\n  TableName extends (DefaultSchemaTableNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &\n        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])\n    : never) = never,\n> = DefaultSchemaTableNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &\n      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])[TableName] extends {\n      Row: infer R\n    }\n    ? R\n    : never\n  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema[\"Tables\"] &\n        DefaultSchema[\"Views\"])\n    ? (DefaultSchema[\"Tables\"] &\n        DefaultSchema[\"Views\"])[DefaultSchemaTableNameOrOptions] extends {\n        Row: infer R\n      }\n      ? R\n      : never\n    : never\n\nexport type TablesInsert<\n  DefaultSchemaTableNameOrOptions extends\n    | keyof DefaultSchema[\"Tables\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  TableName extends (DefaultSchemaTableNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]\n    : never) = never,\n> = DefaultSchemaTableNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {\n      Insert: infer I\n    }\n    ? I\n    : never\n  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]\n    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {\n        Insert: infer I\n      }\n      ? I\n      : never\n    : never\n\nexport type TablesUpdate<\n  DefaultSchemaTableNameOrOptions extends\n    | keyof DefaultSchema[\"Tables\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  TableName extends (DefaultSchemaTableNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]\n    : never) = never,\n> = DefaultSchemaTableNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {\n      Update: infer U\n    }\n    ? U\n    : never\n  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]\n    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {\n        Update: infer U\n      }\n      ? U\n      : never\n    : never\n\nexport type Enums<\n  DefaultSchemaEnumNameOrOptions extends\n    | keyof DefaultSchema[\"Enums\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  EnumName extends (DefaultSchemaEnumNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"]\n    : never) = never,\n> = DefaultSchemaEnumNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"][EnumName]\n  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema[\"Enums\"]\n    ? DefaultSchema[\"Enums\"][DefaultSchemaEnumNameOrOptions]\n    : never\n\nexport type CompositeTypes<\n  PublicCompositeTypeNameOrOptions extends\n    | keyof DefaultSchema[\"CompositeTypes\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"]\n    : never) = never,\n> = PublicCompositeTypeNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"][CompositeTypeName]\n  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema[\"CompositeTypes\"]\n    ? DefaultSchema[\"CompositeTypes\"][PublicCompositeTypeNameOrOptions]\n    : never\n\nexport const Constants = {\n  public: {\n    Enums: {\n      commission_type: [\"fixed\", \"percentage\"],\n      driver_status: [\"online\", \"offline\", \"busy\"],\n      order_status: [\n        \"pending\",\n        \"accepted\",\n        \"in_progress\",\n        \"delivered\",\n        \"cancelled\",\n      ],\n      payment_status: [\"pending\", \"confirmed\", \"rejected\"],\n      transaction_type: [\"commission\", \"payment\"],\n      user_role: [\"customer\", \"driver\", \"agent\", \"admin\"],\n    },\n  },\n} as const\n"}
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      agent_payout_requests: {
+        Row: {
+          admin_notes: string | null
+          agent_id: string
+          amount: number
+          created_at: string
+          id: string
+          payout_phone: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          agent_id: string
+          amount: number
+          created_at?: string
+          id?: string
+          payout_phone: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          agent_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          payout_phone?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_payout_requests_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_payout_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_payouts: {
+        Row: {
+          agent_id: string
+          amount: number
+          created_at: string
+          created_by: string
+          id: string
+          notes: string
+          payment_method: string
+          reference: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+        }
+        Insert: {
+          agent_id: string
+          amount: number
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string
+          payment_method?: string
+          reference?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string
+          amount?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string
+          payment_method?: string
+          reference?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_payouts_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_payouts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_payouts_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agents: {
+        Row: {
+          commission_balance: number
+          created_at: string
+          id: string
+          is_active: boolean
+          payout_phone: string | null
+          region_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          commission_balance?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          payout_phone?: string | null
+          region_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          commission_balance?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          payout_phone?: string | null
+          region_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agents_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agents_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          new_data: Json | null
+          old_data: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          image_url: string | null
+          is_saved_by_admin: boolean
+          message_text: string | null
+          order_id: string
+          saved_by: string | null
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          image_url?: string | null
+          is_saved_by_admin?: boolean
+          message_text?: string | null
+          order_id: string
+          saved_by?: string | null
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          image_url?: string | null
+          is_saved_by_admin?: boolean
+          message_text?: string | null
+          order_id?: string
+          saved_by?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_saved_by_fkey"
+            columns: ["saved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commission_tiers: {
+        Row: {
+          commission_type: Database["public"]["Enums"]["commission_type"]
+          commission_value: number
+          created_at: string
+          id: string
+          is_active: boolean
+          max_orders: number | null
+          min_orders: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          commission_type?: Database["public"]["Enums"]["commission_type"]
+          commission_value?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_orders?: number | null
+          min_orders: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          commission_type?: Database["public"]["Enums"]["commission_type"]
+          commission_value?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_orders?: number | null
+          min_orders?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      commission_transactions: {
+        Row: {
+          amount: number
+          balance_after: number
+          created_at: string
+          driver_id: string
+          id: string
+          notes: string | null
+          order_id: string | null
+          tier_snapshot: Json | null
+          transaction_type: Database["public"]["Enums"]["transaction_type"]
+        }
+        Insert: {
+          amount: number
+          balance_after: number
+          created_at?: string
+          driver_id: string
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          tier_snapshot?: Json | null
+          transaction_type?: Database["public"]["Enums"]["transaction_type"]
+        }
+        Update: {
+          amount?: number
+          balance_after?: number
+          created_at?: string
+          driver_id?: string
+          id?: string
+          notes?: string | null
+          order_id?: string | null
+          tier_snapshot?: Json | null
+          transaction_type?: Database["public"]["Enums"]["transaction_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_transactions_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "commission_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaints: {
+        Row: {
+          admin_action: string | null
+          admin_action_at: string | null
+          agent_action: string | null
+          agent_action_at: string | null
+          agent_id: string | null
+          category: string
+          created_at: string
+          customer_id: string
+          description: string
+          driver_id: string | null
+          escalated_at: string | null
+          escalated_by: string | null
+          id: string
+          order_id: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          admin_action?: string | null
+          admin_action_at?: string | null
+          agent_action?: string | null
+          agent_action_at?: string | null
+          agent_id?: string | null
+          category?: string
+          created_at?: string
+          customer_id: string
+          description: string
+          driver_id?: string | null
+          escalated_at?: string | null
+          escalated_by?: string | null
+          id?: string
+          order_id: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          admin_action?: string | null
+          admin_action_at?: string | null
+          agent_action?: string | null
+          agent_action_at?: string | null
+          agent_id?: string | null
+          category?: string
+          created_at?: string
+          customer_id?: string
+          description?: string
+          driver_id?: string | null
+          escalated_at?: string | null
+          escalated_by?: string | null
+          id?: string
+          order_id?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_escalated_by_fkey"
+            columns: ["escalated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      driver_applications: {
+        Row: {
+          address: string
+          age: number
+          created_at: string
+          created_user_id: string | null
+          full_name: string
+          id: string
+          id_card_back_metadata: Json | null
+          id_card_back_url: string
+          id_card_front_metadata: Json | null
+          id_card_front_url: string
+          personal_photo_url: string | null
+          phone: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          vehicle_type: string
+        }
+        Insert: {
+          address: string
+          age: number
+          created_at?: string
+          created_user_id?: string | null
+          full_name: string
+          id?: string
+          id_card_back_metadata?: Json | null
+          id_card_back_url: string
+          id_card_front_metadata?: Json | null
+          id_card_front_url: string
+          personal_photo_url?: string | null
+          phone: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Update: {
+          address?: string
+          age?: number
+          created_at?: string
+          created_user_id?: string | null
+          full_name?: string
+          id?: string
+          id_card_back_metadata?: Json | null
+          id_card_back_url?: string
+          id_card_front_metadata?: Json | null
+          id_card_front_url?: string
+          personal_photo_url?: string | null
+          phone?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_applications_created_user_id_fkey"
+            columns: ["created_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_applications_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          address: string | null
+          age: number | null
+          agent_id: string | null
+          commission_balance: number
+          created_at: string
+          current_lat: number | null
+          current_lng: number | null
+          id: string
+          id_card_back_url: string | null
+          id_card_front_url: string | null
+          is_active: boolean
+          is_blocked: boolean
+          personal_photo_url: string | null
+          region_id: string | null
+          registration_code: string | null
+          status: Database["public"]["Enums"]["driver_status"]
+          total_completed_orders: number
+          updated_at: string
+          user_id: string
+          vehicle_type: string | null
+          verification_complete: boolean
+          verification_id_card_back_url: string
+          verification_id_card_front_url: string
+          verification_personal_photo_url: string
+          verification_required: boolean
+        }
+        Insert: {
+          address?: string | null
+          age?: number | null
+          agent_id?: string | null
+          commission_balance?: number
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          id?: string
+          id_card_back_url?: string | null
+          id_card_front_url?: string | null
+          is_active?: boolean
+          is_blocked?: boolean
+          personal_photo_url?: string | null
+          region_id?: string | null
+          registration_code?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          total_completed_orders?: number
+          updated_at?: string
+          user_id: string
+          vehicle_type?: string | null
+          verification_complete?: boolean
+          verification_id_card_back_url?: string
+          verification_id_card_front_url?: string
+          verification_personal_photo_url?: string
+          verification_required?: boolean
+        }
+        Update: {
+          address?: string | null
+          age?: number | null
+          agent_id?: string | null
+          commission_balance?: number
+          created_at?: string
+          current_lat?: number | null
+          current_lng?: number | null
+          id?: string
+          id_card_back_url?: string | null
+          id_card_front_url?: string | null
+          is_active?: boolean
+          is_blocked?: boolean
+          personal_photo_url?: string | null
+          region_id?: string | null
+          registration_code?: string | null
+          status?: Database["public"]["Enums"]["driver_status"]
+          total_completed_orders?: number
+          updated_at?: string
+          user_id?: string
+          vehicle_type?: string | null
+          verification_complete?: boolean
+          verification_id_card_back_url?: string
+          verification_id_card_front_url?: string
+          verification_personal_photo_url?: string
+          verification_required?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drivers_region_id_fkey"
+            columns: ["region_id"]
+            isOneToOne: false
+            referencedRelation: "regions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drivers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          data: Json
+          id: string
+          is_read: boolean
+          recipient_role: Database["public"]["Enums"]["user_role"] | null
+          recipient_user_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          data?: Json
+          id?: string
+          is_read?: boolean
+          recipient_role?: Database["public"]["Enums"]["user_role"] | null
+          recipient_user_id?: string | null
+          title: string
+          type?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          is_read?: boolean
+          recipient_role?: Database["public"]["Enums"]["user_role"] | null
+          recipient_user_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          notes: string | null
+          order_id: string
+          quantity: number
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          notes?: string | null
+          order_id: string
+          quantity?: number
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          notes?: string | null
+          order_id?: string
+          quantity?: number
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_status_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          new_status: Database["public"]["Enums"]["order_status"]
+          notes: string | null
+          old_status: Database["public"]["Enums"]["order_status"] | null
+          order_id: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_status: Database["public"]["Enums"]["order_status"]
+          notes?: string | null
+          old_status?: Database["public"]["Enums"]["order_status"] | null
+          order_id: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_status?: Database["public"]["Enums"]["order_status"]
+          notes?: string | null
+          old_status?: Database["public"]["Enums"]["order_status"] | null
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_changed_by_fkey"
+            columns: ["changed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_status_history_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          accepted_at: string | null
+          cancelled_at: string | null
+          created_at: string
+          customer_id: string
+          customer_notes: string | null
+          customer_rating: number | null
+          customer_review: string | null
+          delivered_at: string | null
+          delivery_fee: number
+          driver_id: string | null
+          dropoff_address: string
+          dropoff_lat: number
+          dropoff_lng: number
+          id: string
+          order_number: number
+          picked_up_at: string | null
+          pickup_address: string
+          pickup_lat: number
+          pickup_lng: number
+          pricing_snapshot: Json | null
+          rated_at: string | null
+          route_distance_km: number | null
+          route_duration_minutes: number | null
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          customer_id: string
+          customer_notes?: string | null
+          customer_rating?: number | null
+          customer_review?: string | null
+          delivered_at?: string | null
+          delivery_fee?: number
+          driver_id?: string | null
+          dropoff_address: string
+          dropoff_lat: number
+          dropoff_lng: number
+          id?: string
+          order_number?: number
+          picked_up_at?: string | null
+          pickup_address: string
+          pickup_lat: number
+          pickup_lng: number
+          pricing_snapshot?: Json | null
+          rated_at?: string | null
+          route_distance_km?: number | null
+          route_duration_minutes?: number | null
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          customer_id?: string
+          customer_notes?: string | null
+          customer_rating?: number | null
+          customer_review?: string | null
+          delivered_at?: string | null
+          delivery_fee?: number
+          driver_id?: string | null
+          dropoff_address?: string
+          dropoff_lat?: number
+          dropoff_lng?: number
+          id?: string
+          order_number?: number
+          picked_up_at?: string | null
+          pickup_address?: string
+          pickup_lat?: number
+          pickup_lng?: number
+          pricing_snapshot?: Json | null
+          rated_at?: string | null
+          route_distance_km?: number | null
+          route_duration_minutes?: number | null
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_confirmations: {
+        Row: {
+          amount: number
+          created_at: string
+          driver_id: string
+          id: string
+          notes: string | null
+          payment_method: string
+          proof_image_url: string | null
+          reference: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          driver_id: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          proof_image_url?: string | null
+          reference?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          driver_id?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string
+          proof_image_url?: string | null
+          reference?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_confirmations_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_confirmations_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_methods: {
+        Row: {
+          account_name: string
+          account_number: string
+          created_at: string
+          id: string
+          instructions: string
+          is_active: boolean
+          method_key: string
+          method_name: string
+          updated_at: string
+        }
+        Insert: {
+          account_name?: string
+          account_number?: string
+          created_at?: string
+          id?: string
+          instructions?: string
+          is_active?: boolean
+          method_key: string
+          method_name: string
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string
+          account_number?: string
+          created_at?: string
+          id?: string
+          instructions?: string
+          is_active?: boolean
+          method_key?: string
+          method_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pricing_distance_tiers: {
+        Row: {
+          additional_fee: number
+          created_at: string
+          id: string
+          is_active: boolean
+          max_distance_km: number
+          min_distance_km: number
+          sort_order: number
+        }
+        Insert: {
+          additional_fee?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_distance_km: number
+          min_distance_km: number
+          sort_order?: number
+        }
+        Update: {
+          additional_fee?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_distance_km?: number
+          min_distance_km?: number
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      pricing_settings: {
+        Row: {
+          additional_fee_per_km: number
+          additional_km_fee: number
+          agent_share_per_order: number
+          base_delivery_fee: number
+          base_distance_km: number
+          commission_block_threshold: number
+          created_at: string
+          currency: string
+          default_search_radius_km: number
+          driver_commission_per_order: number
+          free_orders: number
+          id: string
+          is_active: boolean
+          max_search_radius_km: number
+          platform_share_per_agent_order: number
+          radius_expansion_step_km: number
+          updated_at: string
+        }
+        Insert: {
+          additional_fee_per_km?: number
+          additional_km_fee?: number
+          agent_share_per_order?: number
+          base_delivery_fee?: number
+          base_distance_km?: number
+          commission_block_threshold?: number
+          created_at?: string
+          currency?: string
+          default_search_radius_km?: number
+          driver_commission_per_order?: number
+          free_orders?: number
+          id?: string
+          is_active?: boolean
+          max_search_radius_km?: number
+          platform_share_per_agent_order?: number
+          radius_expansion_step_km?: number
+          updated_at?: string
+        }
+        Update: {
+          additional_fee_per_km?: number
+          additional_km_fee?: number
+          agent_share_per_order?: number
+          base_delivery_fee?: number
+          base_distance_km?: number
+          commission_block_threshold?: number
+          created_at?: string
+          currency?: string
+          default_search_radius_km?: number
+          driver_commission_per_order?: number
+          free_orders?: number
+          id?: string
+          is_active?: boolean
+          max_search_radius_km?: number
+          platform_share_per_agent_order?: number
+          radius_expansion_step_km?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      regions: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          instagram: string | null
+          is_active: boolean
+          name: string
+          name_ar: string
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instagram?: string | null
+          is_active?: boolean
+          name: string
+          name_ar?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instagram?: string | null
+          is_active?: boolean
+          name?: string
+          name_ar?: string
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          is_active: boolean
+          phone: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      accept_order: {
+        Args: { p_driver_id: string; p_order_id: string }
+        Returns: Json
+      }
+      cleanup_expired_chat_messages: { Args: never; Returns: number }
+      complete_order_with_commission: {
+        Args: { p_order_id: string }
+        Returns: Json
+      }
+      confirm_payment: {
+        Args: {
+          p_payment_id: string
+          p_review_notes?: string
+          p_reviewer_id: string
+        }
+        Returns: Json
+      }
+      get_agent_region_id: { Args: never; Returns: string }
+      get_driver_id: { Args: never; Returns: string }
+      get_user_role: {
+        Args: never
+        Returns: Database["public"]["Enums"]["user_role"]
+      }
+    }
+    Enums: {
+      commission_type: "fixed" | "percentage"
+      driver_status: "online" | "offline" | "busy"
+      order_status:
+        | "pending"
+        | "accepted"
+        | "in_progress"
+        | "delivered"
+        | "cancelled"
+      payment_status: "pending" | "confirmed" | "rejected"
+      transaction_type: "commission" | "payment"
+      user_role: "customer" | "driver" | "agent" | "admin"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never) = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never) = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never) = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      commission_type: ["fixed", "percentage"],
+      driver_status: ["online", "offline", "busy"],
+      order_status: [
+        "pending",
+        "accepted",
+        "in_progress",
+        "delivered",
+        "cancelled",
+      ],
+      payment_status: ["pending", "confirmed", "rejected"],
+      transaction_type: ["commission", "payment"],
+      user_role: ["customer", "driver", "agent", "admin"],
+    },
+  },
+} as const
