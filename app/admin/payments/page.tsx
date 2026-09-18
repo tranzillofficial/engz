@@ -27,7 +27,15 @@ export default async function AdminPaymentsPage({ searchParams }: AdminPaymentsP
 
   const payments = await getAdminPayments(statusFilter);
   const db = await createClient();
-  const { data: paymentMethod } = await db.from('admin_payment_methods').select('method_key,method_name,account_name,account_number,instructions').eq('is_active',true).order('created_at',{ascending:false}).limit(1).maybeSingle();
+  // This table is present in the deployed database but is not yet included
+  // in the generated Supabase Database type on this branch.
+  const { data: paymentMethod } = await (db as any)
+    .from('admin_payment_methods')
+    .select('method_key,method_name,account_name,account_number,instructions')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
   return (
     <AppShell
