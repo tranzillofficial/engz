@@ -3,7 +3,7 @@
 // Uses batch Matrix API instead of individual route calls per driver
 // ============================================================
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { defaultMapsProvider, calculateHaversineDistanceKm, type LatLng } from './maps';
 import type { Driver, Order, PricingSettings } from '@/lib/types/database';
 
@@ -164,7 +164,7 @@ export async function findEligibleDriversForOrder(order: Pick<Order, 'id' | 'pic
  * Uses the driver's current coordinates to filter pending orders within their zone.
  */
 export async function getAvailableOrdersForDriver(driverId: string) {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
   // 1. Fetch driver info
   const { data: driverData } = await supabase

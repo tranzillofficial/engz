@@ -198,14 +198,49 @@ export function AvailableOrdersList({
                   </div>
                 </div>
 
-                {/* Items preview */}
-                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
-                  <p className="text-[10px] font-bold text-slate-400">محتويات الطلب</p>
-                  <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-5">
-                    {order.order_items
-                      ?.map((it: any) => `${it.quantity ? `${it.quantity}× ` : ''}${it.description}`)
-                      .join(' • ') || 'أصناف متنوعة'}
-                  </p>
+                {/* Detailed Items List */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-750 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <span>🛒</span>
+                      <span>الأصناف المطلوبة ({order.order_items?.length || 0}):</span>
+                    </span>
+                    <span className="text-[10px] text-orange-600 dark:text-orange-400 font-black">
+                      طلبات حرة
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {order.order_items && order.order_items.length > 0 ? (
+                      order.order_items.map((it: any, idx: number) => (
+                        <div
+                          key={it.id || idx}
+                          className="flex items-start gap-2 text-xs bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-100 dark:border-slate-800"
+                        >
+                          <span className="w-4 h-4 rounded-full bg-orange-100 dark:bg-orange-950/40 text-[#FA3802] text-[9px] font-black flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <span className="font-bold text-slate-900 dark:text-slate-100">
+                              {it.quantity && it.quantity > 1 ? (
+                                <b className="text-[#FA3802] ml-1">({it.quantity}×)</b>
+                              ) : null}
+                              {it.description}
+                            </span>
+                            {it.notes && (
+                              <p className="text-[10px] text-slate-500 mt-0.5">
+                                ملاحظة: {it.notes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                        {order.customer_notes || 'تفاصيل الأصناف مسجلة في تفاصيل الرحلة'}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Delivery destination */}

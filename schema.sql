@@ -934,6 +934,7 @@ CREATE POLICY "order_items_select_related" ON order_items FOR SELECT
       AND (
         orders.customer_id = auth.uid() 
         OR orders.driver_id = get_driver_id()
+        OR (get_user_role() = 'driver' AND orders.status = 'pending')
         OR get_user_role() IN ('admin', 'agent')
       )
     )
