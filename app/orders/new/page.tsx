@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createOrderAction, ActionState } from '@/lib/actions/orders';
 import FindMyOrderCard from '@/components/orders/FindMyOrderCard';
 import LocationPicker from '@/components/location/LocationPicker';
+import { PwaRoleInstallCard } from '@/components/pwa/PwaRoleInstallCard';
 
 interface OrderItemForm {
   id: string;
@@ -383,7 +384,8 @@ function NewOrderPageInner() {
           </div>
         )}
 
-        <div className="mb-3">
+        <div className="mb-3 space-y-3">
+          <PwaRoleInstallCard role="customer" />
           <FindMyOrderCard />
         </div>
 

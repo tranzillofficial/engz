@@ -3,6 +3,7 @@ import { getCustomerOrders } from '@/lib/services/orders';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { AppShell, PageHeader, Card, OrderStatusBadge, EmptyState, Button } from '@/components';
+import { PwaRoleInstallCard } from '@/components/pwa/PwaRoleInstallCard';
 import type { OrderStatus } from '@/lib/types/database';
 
 export const dynamic = 'force-dynamic';
@@ -97,7 +98,9 @@ export default async function OrdersPage({ searchParams }: OrdersPageProps) {
       }
       navItems={navItems}
     >
-      <div className="max-w-md mx-auto py-2">
+      <div className="max-w-md mx-auto py-2 space-y-3">
+        <PwaRoleInstallCard role="customer" />
+
         {/* Filter Pills */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-3 scrollbar-none">
           <Link

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
+import InstallPwaButton from '@/components/pwa/InstallPwaButton';
 
 export interface NavItem {
   href: string;
@@ -13,7 +14,6 @@ export interface NavItem {
 }
 
 function getContextualNavItems(items: NavItem[], pathname: string): NavItem[] {
-  // If specific role navigation is needed, provide tailored 5-item bottom bar
   if (pathname.startsWith('/admin')) {
     return [
       { href: '/admin', label: 'الرئيسية', labelEn: 'Overview', icon: '▦' },
@@ -154,7 +154,7 @@ function DashboardLogoutButton() {
           router.refresh();
         }
       }}
-      className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50/90 dark:bg-red-950/40 dark:border-red-900/50 px-3 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors shadow-xs"
+      className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-red-50/90 dark:bg-red-950/40 dark:border-red-900/50 px-3 py-1.5 text-[11px] font-bold text-red-600 hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors shadow-xs shrink-0"
       title="تسجيل الخروج"
     >
       <span>خروج</span>
@@ -182,9 +182,9 @@ export function PageHeader({
 }) {
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 shadow-xs pt-[env(safe-area-inset-top)]">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3 min-h-[56px]">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2.5 min-h-[56px]">
         {/* Left / Start Section */}
-        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {backHref ? (
             <Link
               href={backHref}
@@ -225,7 +225,8 @@ export function PageHeader({
         </div>
 
         {/* Right / End Section */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
+          <InstallPwaButton className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#FA3802] border border-orange-200 dark:border-orange-900/50 text-[11px] font-black hover:bg-orange-100 transition-colors shadow-2xs" />
           {action}
           <DashboardLogoutButton />
         </div>

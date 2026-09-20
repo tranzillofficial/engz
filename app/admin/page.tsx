@@ -3,6 +3,7 @@ import { getAdminSystemStats } from '@/lib/services/admin';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { AppShell, PageHeader, Card, StatCard } from '@/components';
+import { PwaRoleInstallCard } from '@/components/pwa/PwaRoleInstallCard';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,8 @@ export default async function AdminDashboardPage() {
       navItems={navItems}
     >
       <div className="max-w-6xl mx-auto py-3 sm:py-5 space-y-5 font-sans">
+        <PwaRoleInstallCard role="admin" />
+
         <section className="rounded-3xl border border-orange-100 bg-gradient-to-l from-[#FFF4ED] via-white to-white p-5 sm:p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
