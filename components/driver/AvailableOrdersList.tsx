@@ -41,37 +41,66 @@ function playOrderAlertSound() {
 }
 
 export function AvailableOrdersList({
-  orders,
+  orders: initialOrders,
   isDriverBlocked,
   isDriverOnline,
   isDriverBusy,
 }: AvailableOrdersListProps) {
   const router = useRouter();
+  const [orders, setOrders] = useState<any[]>(initialOrders);
   const [isPending, startTransition] = useTransition();
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [newOrderBadge, setNewOrderBadge] = useState(false);
-  const prevCountRef = useRef(orders.length);
+  const prevCountRef = useRef(initialOrders.length);
 
-  // Realtime subscription for incoming orders
+  // Sync state if initialOrders prop changes
+  useEffect(() => {
+    setOrders(initialOrders);
+  }, [initialOrders]);
+
+  // Realtime subscription for instant available orders list updates
   useEffect(() => {
     if (!isDriverOnline || isDriverBusy || isDriverBlocked) return;
 
     const supabase = createClient();
     const channel = supabase
-      .channel('driver-available-orders')
+      .channel('driver-available-orders-realtime')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'orders' },
-        (payload) => {
-          // Play sound and refresh when order is created or updated
-          playOrderAlertSound();
-          if (navigator.vibrate) {
-            navigator.vibrate([200, 100, 200]);
+        { event: 'INSERT', schema: 'public', table: 'orders' },
+        async (payload) => {
+          const newOrder = payload.new as any;
+          if (newOrder.status === 'pending' && !newOrder.driver_id) {
+            playOrderAlertSound();
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            setNewOrderBadge(true);
+            setTimeout(() => setNewOrderBadge(false), 6000);
+            router.refresh();
           }
-          setNewOrderBadge(true);
-          router.refresh();
-          setTimeout(() => setNewOrderBadge(false), 5000);
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'orders' },
+        (payload) => {
+          const updated = payload.new as any;
+          // If order is no longer pending or has been taken by another driver, remove instantly
+          if (updated.status !== 'pending' || updated.driver_id !== null) {
+            setOrders((prev) => prev.filter((o) => o.id !== updated.id));
+          } else {
+            router.refresh();
+          }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'orders' },
+        (payload) => {
+          const deletedId = (payload.old as any)?.id;
+          if (deletedId) {
+            setOrders((prev) => prev.filter((o) => o.id !== deletedId));
+          }
         }
       )
       .subscribe();
@@ -81,7 +110,7 @@ export function AvailableOrdersList({
     };
   }, [isDriverOnline, isDriverBusy, isDriverBlocked, router]);
 
-  // Audio trigger if orders list grew
+  // Audio trigger if orders count increases
   useEffect(() => {
     if (orders.length > prevCountRef.current && isDriverOnline) {
       playOrderAlertSound();
@@ -142,7 +171,7 @@ export function AvailableOrdersList({
 
       {newOrderBadge && (
         <div className="p-3 bg-emerald-500 text-white rounded-2xl text-xs font-black flex items-center justify-between animate-bounce shadow-md">
-          <span>🔔 وصلك إشعار بطلب جديد الآن!</span>
+          <span>🔔 وصلك طلب جديد الآن!</span>
           <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">تحديث فوري</span>
         </div>
       )}

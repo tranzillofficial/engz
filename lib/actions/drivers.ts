@@ -66,9 +66,17 @@ export async function acceptOrderAction(orderId: string) {
 
   const res = await acceptOrderAtomically(orderId, driver.id);
   if (res.success) {
+    try {
+      const { notifyCustomerOrderAccepted } = await import('@/lib/actions/notifications');
+      await notifyCustomerOrderAccepted(orderId, driver.user?.full_name);
+    } catch (e) {
+      console.warn('[DriverAction] notify customer error:', e);
+    }
+
     revalidatePath('/driver');
     revalidatePath('/driver/orders');
     revalidatePath(`/driver/orders/${orderId}`);
+    revalidatePath(`/orders/${orderId}`);
     redirect(`/driver/orders/${orderId}`);
   }
   return res;

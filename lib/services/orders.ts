@@ -247,8 +247,11 @@ export async function cancelOrder(
     return { success: false, error: 'الطلب غير موجود' };
   }
 
-  if (order.status === 'delivered' || order.status === 'cancelled') {
-    return { success: false, error: 'لا يمكن إلغاء هذا الطلب في حالته الحالية' };
+  if (order.status !== 'pending') {
+    return {
+      success: false,
+      error: 'لا يمكن إلغاء الطلب بعد قبوله وبدء تنفيذه من قبل الطيار',
+    };
   }
 
   const { error: updateError } = await supabase
