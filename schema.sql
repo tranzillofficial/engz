@@ -88,10 +88,18 @@ CREATE TABLE IF NOT EXISTS drivers (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   region_id UUID REFERENCES regions(id) ON DELETE SET NULL,
+  agent_id UUID REFERENCES agents(id) ON DELETE SET NULL,
+  age INTEGER DEFAULT NULL,
+  address TEXT DEFAULT '',
+  vehicle_type TEXT DEFAULT 'موتوسيكل',
   status driver_status NOT NULL DEFAULT 'offline',
   current_lat DOUBLE PRECISION DEFAULT NULL,
   current_lng DOUBLE PRECISION DEFAULT NULL,
   is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
+  verification_complete BOOLEAN NOT NULL DEFAULT FALSE,
+  id_front_url TEXT DEFAULT '',
+  id_back_url TEXT DEFAULT '',
+  license_url TEXT DEFAULT '',
   commission_balance DECIMAL(12, 2) NOT NULL DEFAULT 0.00,
   total_completed_orders INTEGER NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -104,7 +112,13 @@ CREATE TABLE IF NOT EXISTS drivers (
 -- 3.5 Pricing Settings (singleton-ish, admin-managed)
 CREATE TABLE IF NOT EXISTS pricing_settings (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  base_delivery_fee DECIMAL(10, 2) NOT NULL DEFAULT 20.00,
+  base_delivery_fee DECIMAL(10, 2) NOT NULL DEFAULT 25.00,
+  base_distance_km DECIMAL(6, 2) NOT NULL DEFAULT 4.00,
+  additional_km_fee DECIMAL(10, 2) NOT NULL DEFAULT 3.00,
+  driver_commission_per_order DECIMAL(10, 2) NOT NULL DEFAULT 6.00,
+  platform_share_per_agent_order DECIMAL(10, 2) NOT NULL DEFAULT 2.50,
+  agent_share_per_order DECIMAL(10, 2) NOT NULL DEFAULT 3.50,
+  free_orders INTEGER NOT NULL DEFAULT 3,
   default_search_radius_km DECIMAL(6, 2) NOT NULL DEFAULT 2.00,
   radius_expansion_step_km DECIMAL(6, 2) NOT NULL DEFAULT 2.00,
   max_search_radius_km DECIMAL(6, 2) NOT NULL DEFAULT 10.00,
@@ -279,6 +293,99 @@ CREATE TABLE IF NOT EXISTS driver_applications (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- 3.15 Notifications
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  recipient_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  body TEXT NOT NULL,
+  type TEXT NOT NULL DEFAULT 'info',
+  data JSONB DEFAULT '{}'::jsonb,
+  is_read BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 3.16 Push Subscriptions (Web Push)
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  endpoint TEXT NOT NULL,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  user_agent TEXT DEFAULT 'browser',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, endpoint)
+);
+
+-- 3.17 Complaints (Customer & Agent Escalation)
+CREATE TABLE IF NOT EXISTS complaints (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  customer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  driver_id UUID REFERENCES drivers(id) ON DELETE SET NULL,
+  agent_id UUID REFERENCES agents(id) ON DELETE SET NULL,
+  category TEXT DEFAULT 'driver',
+  subject TEXT DEFAULT 'شكوى',
+  description TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'agent_review', -- 'agent_review', 'agent_actioned', 'admin_review'
+  agent_action TEXT DEFAULT '',
+  agent_action_at TIMESTAMPTZ DEFAULT NULL,
+  escalated_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  escalated_at TIMESTAMPTZ DEFAULT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 3.18 Payment Methods (Vodafone Cash, InstaPay, etc.)
+CREATE TABLE IF NOT EXISTS payment_methods (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  method_key TEXT UNIQUE NOT NULL,
+  method_name TEXT NOT NULL,
+  account_name TEXT DEFAULT '',
+  account_number TEXT NOT NULL,
+  instructions TEXT DEFAULT '',
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 3.19 Agent Payouts
+CREATE TABLE IF NOT EXISTS agent_payouts (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  agent_id UUID NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+  amount DECIMAL(12, 2) NOT NULL,
+  payment_method TEXT NOT NULL DEFAULT 'manual',
+  reference TEXT DEFAULT '',
+  notes TEXT DEFAULT '',
+  status payment_status NOT NULL DEFAULT 'pending',
+  created_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+  reviewed_at TIMESTAMPTZ DEFAULT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Idempotent Column Additions for Existing Databases
+DO $$ BEGIN
+  ALTER TABLE drivers ADD COLUMN IF NOT EXISTS agent_id UUID REFERENCES agents(id) ON DELETE SET NULL;
+  ALTER TABLE drivers ADD COLUMN IF NOT EXISTS age INTEGER DEFAULT NULL;
+  ALTER TABLE drivers ADD COLUMN IF NOT EXISTS address TEXT DEFAULT '';
+  ALTER TABLE drivers ADD COLUMN IF NOT EXISTS vehicle_type TEXT DEFAULT 'موتوسيكل';
+  ALTER TABLE drivers ADD COLUMN IF NOT EXISTS verification_complete BOOLEAN DEFAULT FALSE;
+  ALTER TABLE drivers ADD COLUMN IF NOT EXISTS id_front_url TEXT DEFAULT '';
+  ALTER TABLE drivers ADD COLUMN IF NOT EXISTS id_back_url TEXT DEFAULT '';
+  ALTER TABLE drivers ADD COLUMN IF NOT EXISTS license_url TEXT DEFAULT '';
+  
+  ALTER TABLE pricing_settings ADD COLUMN IF NOT EXISTS base_distance_km DECIMAL(6, 2) DEFAULT 4.00;
+  ALTER TABLE pricing_settings ADD COLUMN IF NOT EXISTS additional_km_fee DECIMAL(10, 2) DEFAULT 3.00;
+  ALTER TABLE pricing_settings ADD COLUMN IF NOT EXISTS driver_commission_per_order DECIMAL(10, 2) DEFAULT 6.00;
+  ALTER TABLE pricing_settings ADD COLUMN IF NOT EXISTS platform_share_per_agent_order DECIMAL(10, 2) DEFAULT 2.50;
+  ALTER TABLE pricing_settings ADD COLUMN IF NOT EXISTS agent_share_per_order DECIMAL(10, 2) DEFAULT 3.50;
+  ALTER TABLE pricing_settings ADD COLUMN IF NOT EXISTS free_orders INTEGER DEFAULT 3;
+EXCEPTION WHEN OTHERS THEN NULL;
+END $$;
 
 -- Add personal_photo_url if running on existing DB (idempotent)
 DO $$ BEGIN
@@ -909,6 +1016,45 @@ CREATE POLICY "driver_apps_select_admin" ON driver_applications FOR SELECT USING
 DROP POLICY IF EXISTS "driver_apps_update_admin" ON driver_applications;
 CREATE POLICY "driver_apps_update_admin" ON driver_applications FOR UPDATE USING (get_user_role() = 'admin');
 
+-- ---- NOTIFICATIONS ----
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "notifications_select_own" ON notifications;
+CREATE POLICY "notifications_select_own" ON notifications FOR SELECT USING (recipient_user_id = auth.uid() OR get_user_role() = 'admin');
+DROP POLICY IF EXISTS "notifications_update_own" ON notifications;
+CREATE POLICY "notifications_update_own" ON notifications FOR UPDATE USING (recipient_user_id = auth.uid());
+DROP POLICY IF EXISTS "notifications_admin_all" ON notifications;
+CREATE POLICY "notifications_admin_all" ON notifications FOR ALL USING (get_user_role() = 'admin');
+
+-- ---- PUSH SUBSCRIPTIONS ----
+ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "push_subs_user_all" ON push_subscriptions;
+CREATE POLICY "push_subs_user_all" ON push_subscriptions FOR ALL USING (user_id = auth.uid() OR get_user_role() = 'admin');
+
+-- ---- COMPLAINTS ----
+ALTER TABLE complaints ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "complaints_select_customer" ON complaints;
+CREATE POLICY "complaints_select_customer" ON complaints FOR SELECT USING (customer_id = auth.uid() OR get_user_role() IN ('admin', 'agent'));
+DROP POLICY IF EXISTS "complaints_insert_customer" ON complaints;
+CREATE POLICY "complaints_insert_customer" ON complaints FOR INSERT WITH CHECK (customer_id = auth.uid());
+DROP POLICY IF EXISTS "complaints_agent_update" ON complaints;
+CREATE POLICY "complaints_agent_update" ON complaints FOR UPDATE USING (get_user_role() IN ('admin', 'agent'));
+
+-- ---- PAYMENT METHODS ----
+ALTER TABLE payment_methods ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "payment_methods_select_public" ON payment_methods;
+CREATE POLICY "payment_methods_select_public" ON payment_methods FOR SELECT USING (true);
+DROP POLICY IF EXISTS "payment_methods_admin_all" ON payment_methods;
+CREATE POLICY "payment_methods_admin_all" ON payment_methods FOR ALL USING (get_user_role() = 'admin');
+
+-- ---- AGENT PAYOUTS ----
+ALTER TABLE agent_payouts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "agent_payouts_select_agent" ON agent_payouts;
+CREATE POLICY "agent_payouts_select_agent" ON agent_payouts FOR SELECT USING (
+  EXISTS (SELECT 1 FROM agents WHERE agents.id = agent_payouts.agent_id AND agents.user_id = auth.uid()) OR get_user_role() = 'admin'
+);
+DROP POLICY IF EXISTS "agent_payouts_admin_all" ON agent_payouts;
+CREATE POLICY "agent_payouts_admin_all" ON agent_payouts FOR ALL USING (get_user_role() = 'admin');
+
 -- ============================================================
 -- 7. Chat Messages (Driver ↔ Customer messaging)
 -- ============================================================
@@ -1094,8 +1240,8 @@ END $$;
 -- ============================================================
 
 -- Default pricing settings
-INSERT INTO pricing_settings (base_delivery_fee, default_search_radius_km, radius_expansion_step_km, max_search_radius_km, commission_block_threshold, currency)
-VALUES (20.00, 2.00, 2.00, 10.00, 200.00, 'EGP')
+INSERT INTO pricing_settings (base_delivery_fee, base_distance_km, additional_km_fee, default_search_radius_km, radius_expansion_step_km, max_search_radius_km, commission_block_threshold, currency)
+VALUES (25.00, 4.00, 3.00, 2.00, 2.00, 10.00, 200.00, 'EGP')
 ON CONFLICT DO NOTHING;
 
 -- Default distance tiers
