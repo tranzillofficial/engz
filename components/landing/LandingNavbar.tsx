@@ -72,9 +72,9 @@ export default function LandingNavbar({ user }: LandingNavbarProps) {
             <button type="button" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FA3802]/40">
               <span>{lang === 'ar' ? 'عربي' : 'English'}</span><span className="text-gray-300">|</span><span className="text-gray-400 font-normal">{lang === 'ar' ? 'EN' : 'عر'}</span>
             </button>
-            <div className="hidden lg:block"><InstallPwaButton variant="navbar" label="ثبت التطبيق" /></div>
+            <div className="hidden lg:block"><InstallPwaButton label="ثبت التطبيق" /></div>
             <div className="hidden md:block"><Link href={loginHref} className={loginClasses}>{loginLabel}</Link></div>
-            <div className="md:hidden"><InstallPwaButton variant="cta" label="ثبت التطبيق" installedFallback={null} /></div>
+            <div className="md:hidden"><InstallPwaButton label="ثبت التطبيق" installedFallback={null} /></div>
             <button type="button" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="md:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50/80 border border-gray-100 text-slate-700 hover:text-[#FA3802] hover:bg-orange-50 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FA3802]/40" aria-label="القائمة">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                 {mobileMenuOpen ? <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></> : <><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></>}
@@ -97,7 +97,7 @@ export default function LandingNavbar({ user }: LandingNavbarProps) {
             <a href="#footer" onClick={(e) => scrollToSection(e, 'footer')} className="flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FA3802]/40">تواصل معنا<span>›</span></a>
             <Link href="/join-driver" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-black text-[#FA3802] bg-orange-50/70 border border-orange-200/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FA3802]/40">انضم كطيار في إنجز<span>›</span></Link>
           </div>
-          <div className="pt-2 border-t border-gray-100"><InstallPwaButton variant="hero" label="ثبت التطبيق" className="w-full justify-center py-2.5 shadow-xs" /></div>
+          <div className="pt-2 border-t border-gray-100"><InstallPwaButton label="ثبت التطبيق" className="btn btn-primary btn-full justify-center py-2.5 shadow-xs" /></div>
           <div className="pt-2 border-t border-gray-100 grid grid-cols-2 gap-2">
             <Link href={loginHref} onClick={() => setMobileMenuOpen(false)} className={loginClasses + ' w-full'}>{loginLabel}</Link>
             <Link href="/orders/new" onClick={() => setMobileMenuOpen(false)} className={ctaClasses + ' w-full'}>اطلب الآن</Link>

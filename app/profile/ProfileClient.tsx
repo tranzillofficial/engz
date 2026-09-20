@@ -27,7 +27,7 @@ export default function ProfileClient({ user }: ProfilePageProps) {
       }
     >
       <div className="max-w-md mx-auto py-2 space-y-4">
-        <PwaRoleInstallCard role={user.role as any} />
+        <PwaRoleInstallCard />
 
         <Card className="p-4 text-center">
           <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white text-xl font-bold flex items-center justify-center mx-auto mb-2 shadow-md">

@@ -29,9 +29,18 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: '/manifest.webmanifest',
+        // The customer manifest plus the three role manifests.
+        source: '/:manifest(manifest|manifest-customer|manifest-driver|manifest-agent|manifest-admin).webmanifest',
         headers: [
+          { key: 'Content-Type', value: 'application/manifest+json; charset=utf-8' },
           { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+        ],
+      },
+      {
+        // Per-role app icons never change under the same filename.
+        source: '/icons/:role/:file*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
     ];

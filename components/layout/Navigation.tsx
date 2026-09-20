@@ -226,7 +226,10 @@ export function PageHeader({
 
         {/* Right / End Section */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <InstallPwaButton className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-orange-50 dark:bg-orange-950/40 text-[#FA3802] border border-orange-200 dark:border-orange-900/50 text-[11px] font-black hover:bg-orange-100 transition-colors shadow-2xs" />
+          <InstallPwaButton
+            label="تثبيت"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 text-[11px] font-black hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shadow-2xs disabled:opacity-60"
+          />
           {action}
           <DashboardLogoutButton />
         </div>

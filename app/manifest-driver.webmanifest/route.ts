@@ -1,29 +1,12 @@
-export async function GET() {
-  return Response.json(
-    {
-      id: '/driver-app',
-      name: 'إنجز كابتن | ENgz Driver',
-      short_name: 'ENgz Driver',
-      description: 'تطبيق طيارين وكباتن التوصيل لمنصة إنجز',
-      start_url: '/driver',
-      scope: '/driver',
-      display: 'standalone',
-      theme_color: '#D97706',
-      background_color: '#78350F',
-      icons: [
-        {
-          src: '/api/pwa-icon/driver',
-          sizes: '192x192 512x512',
-          type: 'image/svg+xml',
-          purpose: 'any maskable',
-        },
-        {
-          src: '/icon-192.png',
-          sizes: '192x192',
-          type: 'image/png',
-        },
-      ],
+import { buildRoleManifest } from '@/lib/pwa/roles';
+
+export const dynamic = 'force-static';
+
+export function GET() {
+  return Response.json(buildRoleManifest('driver'), {
+    headers: {
+      'Content-Type': 'application/manifest+json; charset=utf-8',
+      'Cache-Control': 'public, max-age=0, must-revalidate',
     },
-    { headers: { 'Content-Type': 'application/manifest+json' } }
-  );
+  });
 }
