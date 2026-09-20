@@ -136,7 +136,15 @@ export function resolveRoleFromPath(pathname: string): PwaRole {
  * PNG icons of at least 192px and 512px, plus a maskable one — SVG icons are
  * ignored by the install criteria, which is why every role has its own PNGs.
  */
-export function buildRoleManifest(role: PwaRole): Record<string, unknown> {
+export function buildRoleManifest(
+  role: PwaRole,
+  /**
+   * URL this manifest is actually served from. It is advertised back as the
+   * app's own related application, so it must match the URL the page links to
+   * — the root pages link /manifest.webmanifest, the role routes link their own.
+   */
+  manifestUrl: string = manifestPathFor(role),
+): Record<string, unknown> {
   const c = PWA_ROLES[role];
   return {
     id: c.id,
@@ -154,6 +162,11 @@ export function buildRoleManifest(role: PwaRole): Record<string, unknown> {
     background_color: c.backgroundColor,
     categories: ['shopping', 'food', 'travel'],
     prefer_related_applications: false,
+    // Declaring this app as its own "related application" is what lets
+    // navigator.getInstalledRelatedApps() report whether it is already
+    // installed — without it the call always returns an empty list, and the
+    // install button cannot tell "already installed" from "not installable".
+    related_applications: [{ platform: 'webapp', url: manifestUrl }],
     icons: [
       { src: `${c.iconDir}/icon-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any' },
       { src: `${c.iconDir}/icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any' },

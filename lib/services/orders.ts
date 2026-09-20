@@ -49,13 +49,21 @@ export async function createOrder(
 
   try {
     // 1. Calculate driving route distance & duration
-    const route = await defaultMapsProvider.getDrivingRoute(
-      { lat: input.pickup_lat, lng: input.pickup_lng },
-      { lat: input.dropoff_lat, lng: input.dropoff_lng }
-    );
+    const isLocalErrand =
+      Math.abs(input.pickup_lat - input.dropoff_lat) < 0.005 &&
+      Math.abs(input.pickup_lng - input.dropoff_lng) < 0.005;
 
-    const distanceKm = route.distanceKm > 0 ? route.distanceKm : 1;
-    const durationMinutes = route.durationMinutes > 0 ? route.durationMinutes : 15;
+    let distanceKm = 1;
+    let durationMinutes = 15;
+
+    if (!isLocalErrand) {
+      const route = await defaultMapsProvider.getDrivingRoute(
+        { lat: input.pickup_lat, lng: input.pickup_lng },
+        { lat: input.dropoff_lat, lng: input.dropoff_lng }
+      );
+      distanceKm = route.distanceKm > 0 ? route.distanceKm : 1;
+      durationMinutes = route.durationMinutes > 0 ? route.durationMinutes : 15;
+    }
 
     // 2. Calculate delivery fee & build immutable pricing snapshot
     const feeResult = await calculateDeliveryFee({ distanceKm });
@@ -78,7 +86,7 @@ export async function createOrder(
         pricing_snapshot: feeResult.pricingSnapshot,
         customer_notes: input.customer_notes || '',
       } as never)
-      .select('id')
+      .select('id, order_number')
       .single();
 
     if (orderError || !order) {
@@ -86,9 +94,11 @@ export async function createOrder(
       return { success: false, error: 'تعذر إنشاء الطلب، يرجى المحاولة مرة أخرى' };
     }
 
+    const orderId = (order as { id: string; order_number?: number }).id;
+
     // 4. Insert order items
     const itemsToInsert = input.items.map((item, index) => ({
-      order_id: (order as { id: string }).id,
+      order_id: orderId,
       description: item.description,
       quantity: item.quantity,
       notes: item.notes || '',
@@ -105,16 +115,32 @@ export async function createOrder(
 
     // 5. Insert initial status history
     await supabase.from('order_status_history').insert({
-      order_id: (order as { id: string }).id,
+      order_id: orderId,
       old_status: null,
       new_status: 'pending',
       changed_by: customerId,
       notes: 'تم إنشاء الطلب بنجاح',
     } as never);
 
+    // 6. Notify eligible online drivers asynchronously
+    try {
+      const { notifyDriversNewOrder } = await import('@/lib/actions/notifications');
+      await notifyDriversNewOrder({
+        orderId,
+        orderNumber: (order as any).order_number,
+        pickupAddress: input.pickup_address,
+        dropoffAddress: input.dropoff_address,
+        deliveryFee: feeResult.totalFee,
+        pickupLat: input.pickup_lat,
+        pickupLng: input.pickup_lng,
+      });
+    } catch (notifyErr) {
+      console.warn('[OrdersService] Error notifying drivers:', notifyErr);
+    }
+
     return {
       success: true,
-      orderId: (order as { id: string }).id,
+      orderId,
     };
   } catch (err) {
     console.error('[OrdersService] Unexpected error creating order:', err);

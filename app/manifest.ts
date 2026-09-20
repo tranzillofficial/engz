@@ -10,5 +10,6 @@ import { buildRoleManifest } from '@/lib/pwa/roles';
  * installs a different app for each interface.
  */
 export default function manifest(): MetadataRoute.Manifest {
-  return buildRoleManifest('customer') as unknown as MetadataRoute.Manifest;
+  // Served at /manifest.webmanifest — advertise that same URL back.
+  return buildRoleManifest('customer', '/manifest.webmanifest') as unknown as MetadataRoute.Manifest;
 }

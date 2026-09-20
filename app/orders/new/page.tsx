@@ -267,10 +267,10 @@ function NewOrderPageInner() {
       formData.set('items', JSON.stringify(validItems));
       formData.set('customer_name', customerName || 'عميل إنجز');
       formData.set('customer_phone', customerPhone.replace(/\s/g, ''));
-      formData.set('pickup_address', 'حسب تفاصيل الأصناف المطلوبة');
+      formData.set('pickup_address', dropoffAddress || 'حسب تفاصيل الأصناف المطلوبة');
       formData.set('dropoff_address', dropoffAddress);
-      formData.set('pickup_lat', '30.0444');
-      formData.set('pickup_lng', '31.2357');
+      formData.set('pickup_lat', String(dropoffLat));
+      formData.set('pickup_lng', String(dropoffLng));
       formData.set('dropoff_lat', String(dropoffLat));
       formData.set('dropoff_lng', String(dropoffLng));
       formData.set('customer_notes', customerNotes);

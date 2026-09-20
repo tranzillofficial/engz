@@ -1,8 +1,10 @@
 'use client';
 
-import { useTransition, useState } from 'react';
+import { useTransition, useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { acceptOrderAction } from '@/lib/actions/drivers';
-import { Card, Button, Alert } from '@/components';
+import { createClient } from '@/lib/supabase/client';
+import { Button, Alert } from '@/components';
 
 interface AvailableOrdersListProps {
   orders: any[];
@@ -11,15 +13,82 @@ interface AvailableOrdersListProps {
   isDriverBusy: boolean;
 }
 
+// Synthesizes a pleasant double-chime notification sound using Web Audio API
+function playOrderAlertSound() {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+
+    const playTone = (freq: number, startTime: number, duration: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+      gain.gain.setValueAtTime(0.3, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+
+    const now = ctx.currentTime;
+    playTone(659.25, now, 0.25); // E5
+    playTone(880, now + 0.15, 0.4); // A5
+    playTone(1046.5, now + 0.3, 0.6); // C6
+  } catch {}
+}
+
 export function AvailableOrdersList({
   orders,
   isDriverBlocked,
   isDriverOnline,
   isDriverBusy,
 }: AvailableOrdersListProps) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [acceptingId, setAcceptingId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [newOrderBadge, setNewOrderBadge] = useState(false);
+  const prevCountRef = useRef(orders.length);
+
+  // Realtime subscription for incoming orders
+  useEffect(() => {
+    if (!isDriverOnline || isDriverBusy || isDriverBlocked) return;
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel('driver-available-orders')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        (payload) => {
+          // Play sound and refresh when order is created or updated
+          playOrderAlertSound();
+          if (navigator.vibrate) {
+            navigator.vibrate([200, 100, 200]);
+          }
+          setNewOrderBadge(true);
+          router.refresh();
+          setTimeout(() => setNewOrderBadge(false), 5000);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isDriverOnline, isDriverBusy, isDriverBlocked, router]);
+
+  // Audio trigger if orders list grew
+  useEffect(() => {
+    if (orders.length > prevCountRef.current && isDriverOnline) {
+      playOrderAlertSound();
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    }
+    prevCountRef.current = orders.length;
+  }, [orders.length, isDriverOnline]);
 
   const handleAccept = (orderId: string) => {
     setErrorMsg(null);
@@ -35,10 +104,12 @@ export function AvailableOrdersList({
 
   if (!isDriverOnline && isDriverBusy) {
     return (
-      <div className="p-6 text-center bg-amber-50 rounded-3xl border border-amber-200">
+      <div className="p-6 text-center bg-amber-50 dark:bg-amber-950/30 rounded-3xl border border-amber-200 dark:border-amber-900/50">
         <span className="text-3xl block mb-2">🚴</span>
-        <h3 className="font-black text-sm text-amber-900">أنت في رحلة حالياً</h3>
-        <p className="text-xs text-amber-700 mt-1">أكمل الرحلة الحالية أولاً لاستقبال طلب جديد.</p>
+        <h3 className="font-black text-sm text-amber-900 dark:text-amber-200">أنت في رحلة حالياً</h3>
+        <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+          أكمل الرحلة الحالية أولاً لاستقبال طلب جديد.
+        </p>
       </div>
     );
   }
@@ -48,17 +119,19 @@ export function AvailableOrdersList({
       <div className="p-7 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
         <span className="text-3xl block mb-2">🌙</span>
         <h3 className="font-black text-sm text-slate-900 dark:text-slate-100">أنت غير متصل</h3>
-        <p className="text-xs text-slate-500 mt-1">فعّل وضع الاتصال (Online) لاستقبال الطلبات القريبة.</p>
+        <p className="text-xs text-slate-500 mt-1">فعّل وضع الاتصال (Online) بالأعلى لاستقبال الطلبات القريبة فوراً.</p>
       </div>
     );
   }
 
   if (isDriverBlocked) {
     return (
-      <div className="p-7 text-center bg-rose-50 rounded-3xl border border-rose-200">
+      <div className="p-7 text-center bg-rose-50 dark:bg-rose-950/30 rounded-3xl border border-rose-200 dark:border-rose-900/50">
         <span className="text-3xl block mb-2">🚫</span>
-        <h3 className="font-black text-sm text-rose-900">استقبال الطلبات متوقف</h3>
-        <p className="text-xs text-rose-700 mt-1">سدد مستحقات العمولات من المحفظة لإعادة تفعيل حسابك فوراً.</p>
+        <h3 className="font-black text-sm text-rose-900 dark:text-rose-200">استقبال الطلبات متوقف</h3>
+        <p className="text-xs text-rose-700 dark:text-rose-300 mt-1">
+          سدد مستحقات العمولات من المحفظة لإعادة تفعيل حسابك فوراً.
+        </p>
       </div>
     );
   }
@@ -66,9 +139,20 @@ export function AvailableOrdersList({
   return (
     <div className="space-y-3 font-sans">
       {errorMsg && <Alert type="error">{errorMsg}</Alert>}
+
+      {newOrderBadge && (
+        <div className="p-3 bg-emerald-500 text-white rounded-2xl text-xs font-black flex items-center justify-between animate-bounce shadow-md">
+          <span>🔔 وصلك إشعار بطلب جديد الآن!</span>
+          <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded-full">تحديث فوري</span>
+        </div>
+      )}
+
       <div className="flex items-end justify-between px-1">
         <div>
-          <h3 className="font-black text-sm text-slate-900 dark:text-slate-100">طلبات متاحة قريبة</h3>
+          <h3 className="font-black text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <span>طلبات متاحة قريبة</span>
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          </h3>
           <p className="text-[11px] text-slate-400 mt-0.5">اختر الطلب المناسب وابدأ التوصيل فوراً</p>
         </div>
         <span className="px-2.5 py-1 rounded-full bg-orange-50 dark:bg-orange-950/30 text-[#FA3802] border border-orange-100 dark:border-orange-900/50 text-[11px] font-black">
@@ -80,7 +164,9 @@ export function AvailableOrdersList({
         <div className="p-8 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
           <span className="text-3xl block mb-2">🔎</span>
           <h3 className="font-black text-sm text-slate-900 dark:text-slate-100">لا توجد طلبات متاحة حالياً</h3>
-          <p className="text-xs text-slate-500 mt-1">أبقِ حسابك متصلاً وستصلك الطلبات فور تسجيل العملاء.</p>
+          <p className="text-xs text-slate-500 mt-1">
+            أبقِ حسابك متصلاً وسيصلك إشعار فوري صوتي فور طلب أي عميل قريب.
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -93,7 +179,9 @@ export function AvailableOrdersList({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <span className="text-[10px] font-black text-slate-400">طلب #{order.id.slice(0, 8)}</span>
+                    <span className="text-[10px] font-black text-slate-400">
+                      طلب #{order.order_number || order.id.slice(0, 8)}
+                    </span>
                     <h4 className="font-black text-sm text-slate-900 dark:text-slate-100 mt-0.5">
                       {order.customer?.full_name || 'عميل إنجز'}
                     </h4>
@@ -114,7 +202,9 @@ export function AvailableOrdersList({
                 <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 space-y-1">
                   <p className="text-[10px] font-bold text-slate-400">محتويات الطلب</p>
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-5">
-                    {order.order_items?.map((it: any) => `${it.quantity ? `${it.quantity}× ` : ''}${it.description}`).join(' • ') || 'أصناف متنوعة'}
+                    {order.order_items
+                      ?.map((it: any) => `${it.quantity ? `${it.quantity}× ` : ''}${it.description}`)
+                      .join(' • ') || 'أصناف متنوعة'}
                   </p>
                 </div>
 

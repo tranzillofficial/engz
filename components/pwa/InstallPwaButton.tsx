@@ -53,6 +53,28 @@ function isRunningStandalone(): boolean {
   );
 }
 
+/**
+ * Why the browser will not show its own install dialog right now. Chrome only
+ * fires `beforeinstallprompt` when every install criterion is met AND the app
+ * is not already installed, so when the event never arrives we work out which
+ * of those it is instead of telling the user to install by hand.
+ */
+type Blocker = 'installed' | 'ios' | 'ios-other-browser' | 'unsupported' | 'insecure' | 'menu';
+
+async function diagnose(): Promise<Blocker> {
+  if (!window.isSecureContext) return 'insecure';
+  if (isIos()) return isNonSafariIos() ? 'ios-other-browser' : 'ios';
+  try {
+    const apps = await navigator.getInstalledRelatedApps?.();
+    if (apps && apps.length > 0) return 'installed';
+  } catch {
+    /* not supported — fall through */
+  }
+  // Firefox and other engines never expose a programmatic install.
+  if (!('onbeforeinstallprompt' in window)) return 'unsupported';
+  return 'menu';
+}
+
 export default function InstallPwaButton({
   role: roleProp,
   className = 'btn btn-primary',
@@ -68,7 +90,7 @@ export default function InstallPwaButton({
   /** True once the browser has handed us a usable install event. */
   const [promptReady, setPromptReady] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [guideOpen, setGuideOpen] = useState(false);
+  const [blocker, setBlocker] = useState<Blocker | null>(null);
 
   useEffect(() => {
     if (isRunningStandalone()) {
@@ -89,7 +111,7 @@ export default function InstallPwaButton({
     const onInstalled = () => {
       window.__engzInstallPrompt = null;
       setInstalled(true);
-      setGuideOpen(false);
+      setBlocker(null);
     };
 
     window.addEventListener('engz:installprompt', onReady);
@@ -113,7 +135,14 @@ export default function InstallPwaButton({
     const evt = window.__engzInstallPrompt;
 
     if (!evt) {
-      setGuideOpen(true);
+      setBusy(true);
+      const reason = await diagnose();
+      setBusy(false);
+      if (reason === 'installed') {
+        setInstalled(true);
+        return;
+      }
+      setBlocker(reason);
       return;
     }
 
@@ -128,7 +157,7 @@ export default function InstallPwaButton({
       if (outcome === 'accepted') setInstalled(true);
     } catch {
       window.__engzInstallPrompt = null;
-      setGuideOpen(true);
+      setBlocker('menu');
     } finally {
       setBusy(false);
     }
@@ -153,39 +182,73 @@ export default function InstallPwaButton({
         <span>{text}</span>
       </button>
 
-      {guideOpen && (
-        <ManualInstallSheet role={role} onClose={() => setGuideOpen(false)} />
+      {blocker && (
+        <InstallHelpSheet role={role} blocker={blocker} onClose={() => setBlocker(null)} />
       )}
     </>
   );
 }
 
 /**
- * Last-resort sheet, shown only when the browser refuses to expose a
- * programmatic install (iOS Safari and friends).
+ * Shown only when the browser refuses a programmatic install. It names the real
+ * reason rather than assuming the user needs manual steps.
  */
-function ManualInstallSheet({ role, onClose }: { role: PwaRole; onClose: () => void }) {
+function InstallHelpSheet({
+  role,
+  blocker,
+  onClose,
+}: {
+  role: PwaRole;
+  blocker: Blocker;
+  onClose: () => void;
+}) {
   const cfg = PWA_ROLES[role];
-  const ios = isIos();
-  const iosWrongBrowser = isNonSafariIos();
 
-  const steps = iosWrongBrowser
-    ? [
-        'افتح نفس الصفحة في متصفح Safari.',
-        'اضغط زر المشاركة ⬆️ في الشريط السفلي.',
-        'اختر «إضافة إلى الشاشة الرئيسية».',
-      ]
-    : ios
-    ? [
+  const COPY: Record<Blocker, { headline: string; steps: string[] }> = {
+    installed: {
+      headline: 'التطبيق متثبت عندك بالفعل — دوّر عليه في شاشة هاتفك.',
+      steps: [
+        'لو مش لاقيه، دوّر باسم «' + cfg.shortName + '» في قائمة التطبيقات.',
+        'لو عايز تثبته من أول وجديد، امسحه الأول من الهاتف.',
+      ],
+    },
+    ios: {
+      headline: 'الآيفون مبيسمحش للمواقع تثبّت نفسها — التثبيت بيتم من Safari.',
+      steps: [
         'اضغط زر المشاركة ⬆️ في الشريط السفلي.',
         'انزل لتحت واختر «إضافة إلى الشاشة الرئيسية».',
         'اضغط «إضافة» وهيظهر التطبيق على شاشتك.',
-      ]
-    : [
+      ],
+    },
+    'ios-other-browser': {
+      headline: 'على الآيفون، Safari وحده هو اللي بيقدر يثبّت التطبيق.',
+      steps: [
+        'افتح نفس الصفحة في متصفح Safari.',
+        'اضغط زر المشاركة ⬆️ ثم «إضافة إلى الشاشة الرئيسية».',
+      ],
+    },
+    unsupported: {
+      headline: 'المتصفح ده مبيدعمش التثبيت بضغطة واحدة.',
+      steps: [
+        'افتح الموقع في Chrome أو Edge وهيشتغل زر التثبيت على طول.',
+        'أو ثبّته من قائمة المتصفح ⋮ ← «تثبيت التطبيق».',
+      ],
+    },
+    insecure: {
+      headline: 'الصفحة مفتوحة على اتصال غير آمن، والتثبيت بيحتاج HTTPS.',
+      steps: ['افتح الموقع من اللينك الرسمي اللي بيبدأ بـ https://'],
+    },
+    menu: {
+      headline: 'المتصفح مطلّعش نافذة التثبيت دلوقتي — ثبّته من قائمته.',
+      steps: [
         'افتح قائمة المتصفح ⋮ من أعلى اليمين.',
         'اختر «تثبيت التطبيق» أو «Add to Home screen».',
-        'أكّد التثبيت وهيظهر التطبيق على شاشتك.',
-      ];
+        'لو الخيار مش ظاهر، اقفل الصفحة وافتحها تاني وجرّب.',
+      ],
+    },
+  };
+
+  const { headline, steps } = COPY[blocker];
 
   return (
     <div
@@ -211,7 +274,9 @@ function ManualInstallSheet({ role, onClose }: { role: PwaRole; onClose: () => v
               <h3 className="font-black text-sm text-slate-900 dark:text-slate-100 truncate">
                 {cfg.title}
               </h3>
-              <p className="text-[11px] text-slate-400">تثبيت على الشاشة الرئيسية</p>
+              <p className="text-[11px] text-slate-400">
+                {blocker === 'installed' ? 'متثبت بالفعل' : 'تثبيت على الشاشة الرئيسية'}
+              </p>
             </div>
           </div>
           <button
@@ -224,9 +289,16 @@ function ManualInstallSheet({ role, onClose }: { role: PwaRole; onClose: () => v
           </button>
         </div>
 
+        <p className="text-xs font-bold text-slate-800 dark:text-slate-100 leading-relaxed">
+          {headline}
+        </p>
+
         <ol className="rounded-2xl bg-slate-50 dark:bg-slate-800/60 p-4 space-y-3">
           {steps.map((step, i) => (
-            <li key={i} className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-200">
+            <li
+              key={i}
+              className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-200"
+            >
               <span
                 className="w-6 h-6 shrink-0 rounded-lg text-white font-black text-[11px] flex items-center justify-center"
                 style={{ backgroundColor: cfg.themeColor }}

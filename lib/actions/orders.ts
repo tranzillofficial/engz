@@ -27,12 +27,12 @@ export async function createOrderAction(
 
   const customerName = (formData.get('customer_name') as string)?.trim() || '';
   const customerPhone = (formData.get('customer_phone') as string)?.trim() || '';
-  const pickupAddress = (formData.get('pickup_address') as string)?.trim() || 'حسب تفاصيل الأصناف المطلوبة';
-  const pickupLat = parseFloat(formData.get('pickup_lat') as string) || 30.0444;
-  const pickupLng = parseFloat(formData.get('pickup_lng') as string) || 31.2357;
   const dropoffAddress = (formData.get('dropoff_address') as string)?.trim() || '';
-  const dropoffLat = parseFloat(formData.get('dropoff_lat') as string) || 30.0544;
-  const dropoffLng = parseFloat(formData.get('dropoff_lng') as string) || 31.2457;
+  const dropoffLat = parseFloat(formData.get('dropoff_lat') as string) || 30.0444;
+  const dropoffLng = parseFloat(formData.get('dropoff_lng') as string) || 31.2357;
+  const pickupAddress = (formData.get('pickup_address') as string)?.trim() || dropoffAddress || 'حسب تفاصيل الأصناف المطلوبة';
+  const pickupLat = parseFloat(formData.get('pickup_lat') as string) || dropoffLat;
+  const pickupLng = parseFloat(formData.get('pickup_lng') as string) || dropoffLng;
   const customerNotes = (formData.get('customer_notes') as string) || '';
   const itemsJson = formData.get('items') as string;
 

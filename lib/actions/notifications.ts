@@ -28,3 +28,82 @@ export async function sendNotificationAction(formData:FormData){
   if(configured){const{subscriptions}=await db.from('push_subscriptions').select('id,user_id,endpoint,p256dh,auth').in('user_id',ids);for(const sub of (subscriptions||[])){try{await webpush.sendNotification({endpoint:sub.endpoint,keys:{p256dh:sub.p256dh,auth:sub.auth}},JSON.stringify({title,body,type}));}catch(e:any){if(e?.statusCode===404||e?.statusCode===410)await db.from('push_subscriptions').delete().eq('id',sub.id);}}}
   revalidatePath('/admin/notifications');return{success:true,pushConfigured:configured};
 }
+
+export async function notifyDriversNewOrder(params: {
+  orderId: string;
+  orderNumber?: number;
+  pickupAddress?: string;
+  dropoffAddress?: string;
+  deliveryFee: number;
+  pickupLat: number;
+  pickupLng: number;
+}) {
+  try {
+    const db: any = await createAdminClient();
+
+    const { data: drivers, error: driversError } = await db
+      .from('drivers')
+      .select('id, user_id, current_lat, current_lng')
+      .eq('status', 'online')
+      .eq('is_active', true)
+      .eq('is_blocked', false);
+
+    if (driversError || !drivers || drivers.length === 0) {
+      return { success: true, count: 0 };
+    }
+
+    const title = `طلب توصيل جديد 🚀 (${params.deliveryFee} ج)`;
+    const body = `توصيل إلى: ${(params.dropoffAddress || 'العنوان المسجل').slice(0, 50)}`;
+    const driverUserIds = drivers.map((d: any) => d.user_id).filter(Boolean);
+
+    if (driverUserIds.length === 0) return { success: true, count: 0 };
+
+    const notificationRows = driverUserIds.map((uid: string) => ({
+      recipient_user_id: uid,
+      title,
+      body,
+      type: 'order_created',
+      data: {
+        orderId: params.orderId,
+        deliveryFee: params.deliveryFee,
+        url: '/driver',
+      },
+    }));
+
+    await db.from('notifications').insert(notificationRows);
+
+    if (configured) {
+      const { data: subscriptions } = await db
+        .from('push_subscriptions')
+        .select('id, user_id, endpoint, p256dh, auth')
+        .in('user_id', driverUserIds);
+
+      for (const sub of (subscriptions || [])) {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint: sub.endpoint,
+              keys: { p256dh: sub.p256dh, auth: sub.auth },
+            },
+            JSON.stringify({
+              title,
+              body,
+              type: 'order_created',
+              url: '/driver',
+            })
+          );
+        } catch (e: any) {
+          if (e?.statusCode === 404 || e?.statusCode === 410) {
+            await db.from('push_subscriptions').delete().eq('id', sub.id);
+          }
+        }
+      }
+    }
+
+    return { success: true, count: driverUserIds.length };
+  } catch (err) {
+    console.error('[Notifications] Failed to notify drivers:', err);
+    return { success: false, error: 'Failed to notify drivers' };
+  }
+}
+
